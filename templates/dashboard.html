@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>智能宠物监督系统</title>
+    <script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f0f2f5; }
+        .container { max-width: 1200px; margin: auto; }
+        .card { background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); padding: 20px; margin-bottom: 20px; }
+        .sensor-panel { display: flex; gap: 20px; margin-bottom: 20px; }
+        .sensor-item { flex: 1; text-align: center; padding: 20px; border-radius: 8px; background: #f9f9f9; }
+        .temp { color: #e67e22; font-size: 48px; font-weight: bold; }
+        .humi { color: #2980b9; font-size: 48px; font-weight: bold; }
+        .alert-item { padding: 8px; border-left: 4px solid red; background: #ffe6e6; margin: 5px 0; }
+        .alert-camera { border-left-color: #e67e22; background: #fff3e6; }
+        img.snapshot { max-width: 200px; border-radius: 5px; margin-top: 10px; }
+        h3 { margin-top: 0; }
+        #chart { height: 400px; width: 100%; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>🐾 智能宠物监督系统 | 实时监控</h2>
+    
+    <div class="sensor-panel">
+        <div class="sensor-item">
+            <h3>🌡️ 温度</h3>
+            <div class="temp" id="tempVal">--</div>
+            <div>摄氏度 (°C)</div>
+        </div>
+        <div class="sensor-item">
+            <h3>💧 湿度</h3>
+            <div class="humi" id="humiVal">--</div>
+            <div>百分比 (%)</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>📈 历史趋势（最近100条）</h3>
+        <div id="chart"></div>
+    </div>
+
+    <div class="card">
+        <h3>⚠️ 最新警报</h3>
+        <div id="alertList" style="max-height: 300px; overflow-y: auto;">
+            <p>加载中...</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    const socket = io();
+    let chart = null;
+    
+    function initChart(timestamps, temps, humis) {
+        chart = echarts.init(document.getElementById('chart'));
+        chart.setOption({
+            tooltip: { trigger: 'axis' },
+            legend: { data: ['温度(°C)', '湿度(%)'] },
+            xAxis: { type: 'category', data: timestamps },
+            yAxis: [{ type: 'value', name: '温度' }, { type: 'value', name: '湿度' }],
+            series: [
+                { name: '温度', type: 'line', data: temps, smooth: true, lineStyle: { color: '#e67e22' } },
+                { name: '湿度', type: 'line', data: humis, smooth: true, lineStyle: { color: '#2980b9' }, yAxisIndex: 1 }
+            ]
+        });
+    }
+    
+    function updateChart(newTime, newTemp, newHumi) {
+        if (!chart) return;
+        let option = chart.getOption();
+        option.xAxis[0].data.push(newTime);
+        option.series[0].data.push(newTemp);
+        option.series[1].data.push(newHumi);
+        if (option.xAxis[0].data.length > 100) {
+            option.xAxis[0].data.shift();
+            option.series[0].data.shift();
+            option.series[1].data.shift();
+        }
+        chart.setOption(option);
+    }
+    
+    function addAlert(time, type, message, imagePath) {
+        const alertDiv = document.getElementById('alertList');
+        const newAlert = document.createElement('div');
+        newAlert.className = 'alert-item' + (type === '摄像头告警' ? ' alert-camera' : '');
+        let imgHtml = '';
+        if (imagePath && imagePath !== '') {
+            imgHtml = `<br><img class="snapshot" src="/static/${imagePath}?t=${Date.now()}" onerror="this.style.display='none'">`;
+        }
+        newAlert.innerHTML = `<strong>${type}</strong> ${message}<br><small>${time}</small>${imgHtml}`;
+        alertDiv.prepend(newAlert);
+        while (alertDiv.children.length > 20) alertDiv.removeChild(alertDiv.lastChild);
+    }
+    
+    // 请求初始数据
+    socket.emit('get_initial_data');
+    socket.on('initial_data', (data) => {
+        initChart(data.timestamps, data.temps, data.humis);
+        document.getElementById('alertList').innerHTML = '';
+        if (data.alerts.length === 0) {
+            document.getElementById('alertList').innerHTML = '<p>暂无警报</p>';
+        } else {
+            data.alerts.forEach(alert => {
+                addAlert(alert[0], alert[1], alert[2], alert[3] || '');
+            });
+        }
+        if (data.temps.length > 0) {
+            document.getElementById('tempVal').innerText = data.temps[data.temps.length-1];
+            document.getElementById('humiVal').innerText = data.humis[data.humis.length-1];
+        }
+    });
+    
+    socket.on('new_sensor', (data) => {
+        document.getElementById('tempVal').innerText = data.temp;
+        document.getElementById('humiVal').innerText = data.humi;
+        updateChart(data.time, data.temp, data.humi);
+    });
+    
+    socket.on('new_alert', (alert) => {
+        addAlert(alert.time, alert.type, alert.message, alert.image);
+    });
+</script>
+</body>
+</html>
