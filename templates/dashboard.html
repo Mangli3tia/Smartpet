@@ -16,15 +16,8 @@
         .alert-item { padding: 8px; border-left: 4px solid red; background: #ffe6e6; margin: 5px 0; }
         .alert-camera { border-left-color: #e67e22; background: #fff3e6; }
         img.snapshot { max-width: 200px; border-radius: 5px; margin-top: 10px; }
-        button { margin-right: 10px; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; }
-        .btn-primary { background-color: #007bff; color: white; }
-        .btn-success { background-color: #28a745; color: white; }
-        .btn-secondary { background-color: #6c757d; color: white; }
-        .btn-info { background-color: #17a2b8; color: white; }
-        .status-text { margin-left: 10px; font-style: italic; color: #666; }
         h3 { margin-top: 0; }
         #chart { height: 400px; width: 100%; }
-        #latestImg { max-width: 100%; border-radius: 8px; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -50,29 +43,6 @@
     </div>
 
     <div class="card">
-        <h3>📸 最新抓拍</h3>
-        <div style="text-align:center;">
-            <img id="latestImg" src="" style="display:none; max-width:100%; border-radius:8px;">
-            <p id="noImgMsg">暂无图片</p>
-            <button id="refreshCamBtn" class="btn-info">📷 刷新摄像头</button>
-            <span id="countdown" style="margin-left:10px; font-size:0.9em;"></span>
-        </div>
-    </div>
-
-    <div class="card">
-        <h3>🎮 远程控制</h3>
-        <div>
-            <button id="feedBtn" class="btn-primary">🍖 喂食器</button>
-            <span id="feederStatus" class="status-text">待命</span>
-        </div>
-        <div style="margin-top:10px;">
-            <button id="acOnBtn" class="btn-success">❄️ 开空调</button>
-            <button id="acOffBtn" class="btn-secondary">🔥 关空调</button>
-            <span id="acStatus" class="status-text">待命</span>
-        </div>
-    </div>
-
-    <div class="card">
         <h3>⚠️ 最新警报</h3>
         <div id="alertList" style="max-height: 300px; overflow-y: auto;">
             <p>加载中...</p>
@@ -83,9 +53,7 @@
 <script>
     const socket = io();
     let chart = null;
-    let countdownInterval = null;
-
-    // ---------- ECharts 初始化 ----------
+    
     function initChart(timestamps, temps, humis) {
         chart = echarts.init(document.getElementById('chart'));
         chart.setOption({
@@ -99,7 +67,7 @@
             ]
         });
     }
-
+    
     function updateChart(newTime, newTemp, newHumi) {
         if (!chart) return;
         let option = chart.getOption();
@@ -113,8 +81,7 @@
         }
         chart.setOption(option);
     }
-
-    // ---------- 警报列表添加 ----------
+    
     function addAlert(time, type, message, imagePath) {
         const alertDiv = document.getElementById('alertList');
         const newAlert = document.createElement('div');
@@ -127,8 +94,8 @@
         alertDiv.prepend(newAlert);
         while (alertDiv.children.length > 20) alertDiv.removeChild(alertDiv.lastChild);
     }
-
-    // ---------- 请求初始数据 ----------
+    
+    // 请求初始数据
     socket.emit('get_initial_data');
     socket.on('initial_data', (data) => {
         initChart(data.timestamps, data.temps, data.humis);
@@ -145,95 +112,15 @@
             document.getElementById('humiVal').innerText = data.humis[data.humis.length-1];
         }
     });
-
-    // ---------- 实时传感器数据 ----------
+    
     socket.on('new_sensor', (data) => {
         document.getElementById('tempVal').innerText = data.temp;
         document.getElementById('humiVal').innerText = data.humi;
         updateChart(data.time, data.temp, data.humi);
     });
-
-    // ---------- 警报推送（同时更新图片） ----------
+    
     socket.on('new_alert', (alert) => {
         addAlert(alert.time, alert.type, alert.message, alert.image);
-        // 如果是摄像头告警且有图片，更新最新抓拍区域
-        if (alert.image && alert.image !== '') {
-            const imgElement = document.getElementById('latestImg');
-            const noImgMsg = document.getElementById('noImgMsg');
-            imgElement.src = '/static/' + alert.image + '?t=' + Date.now();
-            imgElement.style.display = 'block';
-            noImgMsg.style.display = 'none';
-            // 如果倒计时还在，清除并显示完成
-            if (countdownInterval) {
-                clearInterval(countdownInterval);
-                document.getElementById('countdown').innerText = '✅ 图片已更新';
-                setTimeout(() => {
-                    document.getElementById('countdown').innerText = '';
-                }, 2000);
-            }
-        }
-    });
-
-    // ---------- 手动拍照（倒计时 + 请求） ----------
-    function startCountdown(seconds) {
-        if (countdownInterval) clearInterval(countdownInterval);
-        let remaining = seconds;
-        const countdownDiv = document.getElementById('countdown');
-        countdownDiv.innerText = `拍照中... ${remaining}s`;
-        countdownInterval = setInterval(() => {
-            remaining--;
-            if (remaining >= 0) {
-                countdownDiv.innerText = `拍照中... ${remaining}s`;
-            } else {
-                clearInterval(countdownInterval);
-                countdownDiv.innerText = '';
-            }
-        }, 1000);
-    }
-
-    document.getElementById('refreshCamBtn').onclick = () => {
-        socket.emit('camera_refresh', {});
-        startCountdown(10);
-        document.getElementById('noImgMsg').innerText = '拍照中，请稍候...';
-    };
-
-    // ---------- 远程控制 ----------
-    document.getElementById('feedBtn').onclick = () => {
-        socket.emit('control', { device: 'feeder', action: 'feed' });
-        document.getElementById('feederStatus').innerText = '发送中...';
-    };
-    document.getElementById('acOnBtn').onclick = () => {
-        socket.emit('control', { device: 'ac', action: 'on' });
-        document.getElementById('acStatus').innerText = '发送中...';
-    };
-    document.getElementById('acOffBtn').onclick = () => {
-        socket.emit('control', { device: 'ac', action: 'off' });
-        document.getElementById('acStatus').innerText = '发送中...';
-    };
-
-    // 控制指令发送结果反馈
-    socket.on('control_result', (data) => {
-        if (data.device === 'feeder') {
-            document.getElementById('feederStatus').innerText = data.status;
-            setTimeout(() => { document.getElementById('feederStatus').innerText = '待命'; }, 3000);
-        } else if (data.device === 'ac') {
-            document.getElementById('acStatus').innerText = data.status;
-            setTimeout(() => { document.getElementById('acStatus').innerText = '待命'; }, 3000);
-        }
-    });
-
-    // 执行器实际状态反馈（来自 MQTT 反馈）
-    socket.on('feeder_status', (data) => {
-        document.getElementById('feederStatus').innerText = (data.status === 'success') ? '喂食成功' : '喂食失败';
-        setTimeout(() => { document.getElementById('feederStatus').innerText = '待命'; }, 3000);
-    });
-    socket.on('ac_status', (data) => {
-        let text = '';
-        if (data.status === 'on') text = '空调已开启';
-        else if (data.status === 'off') text = '空调已关闭';
-        else text = data.status;
-        document.getElementById('acStatus').innerText = text;
-        setTimeout(() => { document.getElementById('acStatus').innerText = '待命'; }, 3000);
     });
 </script>
 </body>
