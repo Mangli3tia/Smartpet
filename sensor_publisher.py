@@ -4,18 +4,15 @@ import json
 import paho.mqtt.client as mqtt
 from config import MQTT_BROKER, MQTT_PORT, TOPIC_TEMP, TOPIC_HUMI
 
-# 连接成功回调（1.6.1 版本签名，无 properties）
 def on_connect(client, userdata, flags, rc):
     if rc == 0:
         print("✅ 传感器发布端已连接到 MQTT 服务器")
     else:
         print(f"❌ 连接失败，返回码: {rc}")
 
-# 消息发布成功回调（1.6.1 版本签名）
 def on_publish(client, userdata, mid):
     print(f"✅ 消息已发布, mid={mid}")
 
-# 创建客户端（1.6.1 直接 Client()，无参数）
 client = mqtt.Client()
 client.on_connect = on_connect
 client.on_publish = on_publish

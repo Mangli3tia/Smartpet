@@ -1,21 +1,54 @@
 import json
 import threading
 import paho.mqtt.client as mqtt
-from config import MQTT_BROKER, MQTT_PORT, TOPIC_TEMP, TOPIC_HUMI, TOPIC_CAMERA, TEMP_MAX, HUMI_MIN
+from config import (MQTT_BROKER, MQTT_PORT,
+                    TOPIC_TEMP, TOPIC_HUMI, TOPIC_CAMERA,
+                    TOPIC_FEEDER, TOPIC_AC,
+                    TOPIC_FEEDER_STATUS, TOPIC_AC_STATUS,
+                    TEMP_MAX, HUMI_MIN)
 from database import init_db, save_sensor_data, save_alert
 
 current_temp = None
 current_humi = None
 lock = threading.Lock()
 
-def on_connect(client, userdata, flags, rc, properties=None):
+def on_connect(client, userdata, flags, rc):
     print("订阅端已连接 MQTT Broker")
-    client.subscribe([(TOPIC_TEMP, 0), (TOPIC_HUMI, 0), (TOPIC_CAMERA, 0)])
+    client.subscribe([(TOPIC_TEMP, 0), (TOPIC_HUMI, 0), (TOPIC_CAMERA, 0),
+                      (TOPIC_FEEDER, 0), (TOPIC_AC, 0)])
 
 def on_message(client, userdata, msg):
     global current_temp, current_humi
     topic = msg.topic
-    payload = json.loads(msg.payload.decode())
+    payload_str = msg.payload.decode()
+
+    # ---------- 处理控制指令（纯文本） ----------
+    if topic == TOPIC_FEEDER:
+        if payload_str == "feed":
+            print("🍖 执行喂食动作（模拟）")
+            # 真实硬件可在此添加 GPIO 控制
+            client.publish(TOPIC_FEEDER_STATUS, "success")
+        else:
+            client.publish(TOPIC_FEEDER_STATUS, "unknown")
+        return
+
+    if topic == TOPIC_AC:
+        if payload_str == "on":
+            print("❄️ 开启空调（模拟）")
+            client.publish(TOPIC_AC_STATUS, "on")
+        elif payload_str == "off":
+            print("🔥 关闭空调（模拟）")
+            client.publish(TOPIC_AC_STATUS, "off")
+        else:
+            client.publish(TOPIC_AC_STATUS, "unknown")
+        return
+
+    # ---------- 处理传感器和摄像头数据（JSON） ----------
+    try:
+        payload = json.loads(payload_str)
+    except:
+        print(f"收到非 JSON 消息，忽略: {topic}")
+        return
 
     if topic == TOPIC_TEMP:
         with lock:
@@ -28,9 +61,10 @@ def on_message(client, userdata, msg):
         img_path = payload.get("image", "")
         msg_text = f"检测到宠物活动，时间：{event_time}"
         save_alert("摄像头告警", msg_text, img_path)
-        print(f"[规则引擎] 摄像头告警已保存: {msg_text}")
+        print(f"[规则引擎] 摄像头告警已保存：{msg_text}")
         return
 
+    # 当温湿度都到达时，保存并执行规则
     if current_temp is not None and current_humi is not None:
         with lock:
             temp = current_temp
@@ -53,7 +87,7 @@ def on_message(client, userdata, msg):
 
 def main():
     init_db()
-    client = mqtt.Client()   # 修改这里
+    client = mqtt.Client()
     client.on_connect = on_connect
     client.on_message = on_message
     client.connect(MQTT_BROKER, MQTT_PORT, 60)
