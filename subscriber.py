@@ -7,6 +7,8 @@ from config import (MQTT_BROKER, MQTT_PORT,
                     TOPIC_FEEDER_STATUS, TOPIC_AC_STATUS,
                     TEMP_MAX, HUMI_MIN)
 from database import init_db, save_sensor_data, save_alert
+from utils.feeder import feed          # 喂食器控制函数
+from utils.ac import ac_on, ac_off     # 空调控制函数
 
 current_temp = None
 current_humi = None
@@ -14,7 +16,7 @@ lock = threading.Lock()
 
 def on_connect(client, userdata, flags, rc):
     print("订阅端已连接 MQTT Broker")
-    client.subscribe([(TOPIC_TEMP, 0), (TOPIC_HUMI, 0), (TOPIC_CAMERA, 0),
+    client.subscribe([(TOPIC_TEMP, 0), (TOPIC_HUMI, 0), (TOPIC_CAMERA, 1),
                       (TOPIC_FEEDER, 0), (TOPIC_AC, 0)])
 
 def on_message(client, userdata, msg):
@@ -25,20 +27,19 @@ def on_message(client, userdata, msg):
     # ---------- 处理控制指令（纯文本） ----------
     if topic == TOPIC_FEEDER:
         if payload_str == "feed":
-            print("🍖 执行喂食动作（模拟）")
-            # 真实硬件可在此添加 GPIO 控制
-            client.publish(TOPIC_FEEDER_STATUS, "success")
+            success = feed()
+            client.publish(TOPIC_FEEDER_STATUS, "success" if success else "fail")
         else:
             client.publish(TOPIC_FEEDER_STATUS, "unknown")
         return
 
     if topic == TOPIC_AC:
         if payload_str == "on":
-            print("❄️ 开启空调（模拟）")
-            client.publish(TOPIC_AC_STATUS, "on")
+            success = ac_on()
+            client.publish(TOPIC_AC_STATUS, "on" if success else "fail")
         elif payload_str == "off":
-            print("🔥 关闭空调（模拟）")
-            client.publish(TOPIC_AC_STATUS, "off")
+            success = ac_off()
+            client.publish(TOPIC_AC_STATUS, "off" if success else "fail")
         else:
             client.publish(TOPIC_AC_STATUS, "unknown")
         return
