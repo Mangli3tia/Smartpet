@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Smart Pet Monitor | Professional</title>
+    <title>Smart Pet Monitor | Multi-Pet</title>
     <!-- 图标库 Font Awesome 6 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <!-- 谷歌字体 Inter -->
@@ -35,6 +35,10 @@
         .app-header {
             margin-bottom: 2rem;
             text-align: left;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
         }
         .app-header h1 {
             font-size: 1.8rem;
@@ -53,12 +57,29 @@
             color: #3b82f6;
             font-size: 2rem;
         }
+        .pet-selector {
+            background: white;
+            border-radius: 2rem;
+            padding: 0.5rem 1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .pet-selector select {
+            font-family: 'Inter', sans-serif;
+            padding: 0.3rem 0.8rem;
+            border-radius: 1.5rem;
+            border: 1px solid #cbd5e1;
+            background: white;
+        }
         .sub {
             color: #4b5563;
             margin-top: 0.4rem;
             font-size: 0.95rem;
             border-left: 3px solid #3b82f6;
             padding-left: 1rem;
+            width: 100%;
         }
 
         /* 卡片通用样式 */
@@ -276,7 +297,11 @@
 <div class="container">
     <div class="app-header">
         <h1><i class="fas fa-paw"></i> Smart Pet Monitoring System</h1>
-        <div class="sub">MQTT Real‑time · Rule Engine · Remote Control · Smart Snapshot</div>
+        <div class="pet-selector">
+            <label><i class="fas fa-dog"></i> Select Pet:</label>
+            <select id="petSelect"></select>
+        </div>
+        <div class="sub">MQTT Real‑time · Rule Engine · Remote Control · Multi‑Pet · Smart Snapshot</div>
     </div>
 
     <!-- 传感器卡片：温度、湿度 -->
@@ -343,6 +368,7 @@
     const socket = io();
     let chart = null;
     let countdownInterval = null;
+    let currentPetId = null;   // 当前选中的宠物 ID
 
     // ---------- 辅助函数：将中文警报类型转换为英文 ----------
     function translateAlertType(chineseType) {
@@ -356,14 +382,12 @@
     // ---------- 辅助函数：将中文警报消息转换为英文 ----------
     function translateAlertMessage(chineseMsg) {
         let msg = chineseMsg;
-        // 环境警报前缀转换（注意顺序，先长后短避免重复替换）
         msg = msg.replace(/高温警报：/g, "High temperature: ");
         msg = msg.replace(/低湿警报：/g, "Low humidity: ");
-        msg = msg.replace(/低温警报：/g, "Low humidity: ");  // 兼容旧写法
+        msg = msg.replace(/低温警报：/g, "Low humidity: ");
         msg = msg.replace(/超过阈值/g, "exceeds threshold");
         msg = msg.replace(/低于阈值/g, "below threshold");
         msg = msg.replace(/检测到宠物活动，时间：/g, "Pet movement detected at: ");
-        // 针对可能包含“环境警报”的情况（虽然类型已经单独处理，但消息中也可能有）
         msg = msg.replace(/环境警报/g, "Environment Alert");
         return msg;
     }
@@ -421,10 +445,84 @@
         chart.setOption(option);
     }
 
+    // ========== 加载宠物列表并初始化 ==========
+    fetch('/api/pets')
+        .then(res => res.json())
+        .then(pets => {
+            const select = document.getElementById('petSelect');
+            select.innerHTML = '';
+            if (pets.length === 0) {
+                select.innerHTML = '<option>No pets</option>';
+                return;
+            }
+            pets.forEach(pet => {
+                const option = document.createElement('option');
+                option.value = pet.id;
+                option.text = `${pet.name} (${pet.species || 'pet'})`;
+                select.appendChild(option);
+            });
+            currentPetId = pets[0].id;
+            select.value = currentPetId;
+            loadPetData(currentPetId);
+
+            select.addEventListener('change', (e) => {
+                currentPetId = parseInt(e.target.value);
+                loadPetData(currentPetId);
+            });
+        });
+
+    function loadPetData(petId) {
+        // 通过 REST API 加载历史数据和警报（快速显示）
+        fetch(`/api/history/${petId}?limit=100`)
+            .then(res => res.json())
+            .then(data => {
+                if (chart) {
+                    chart.setOption({
+                        xAxis: { data: data.timestamps },
+                        series: [{ data: data.temps }, { data: data.humis }]
+                    });
+                } else {
+                    initChart(data.timestamps, data.temps, data.humis);
+                }
+                if (data.temps.length > 0) {
+                    document.getElementById('tempVal').innerText = data.temps[data.temps.length-1];
+                    document.getElementById('humiVal').innerText = data.humis[data.humis.length-1];
+                } else {
+                    document.getElementById('tempVal').innerText = '--';
+                    document.getElementById('humiVal').innerText = '--';
+                }
+            });
+        fetch(`/api/alerts/${petId}`)
+            .then(res => res.json())
+            .then(alerts => {
+                const container = document.getElementById('alertList');
+                container.innerHTML = '';
+                if (alerts.length === 0) {
+                    container.innerHTML = '<p>No alerts</p>';
+                } else {
+                    alerts.forEach(alert => addAlert(alert.time, alert.type, alert.message, alert.image));
+                }
+            });
+        // 通过 WebSocket 请求实时数据推送（用于后续实时更新）
+        socket.emit('get_initial_data', { pet_id: petId });
+    }
+
     // ========== WebSocket 事件处理 ==========
-    socket.emit('get_initial_data');
     socket.on('initial_data', (data) => {
-        initChart(data.timestamps, data.temps, data.humis);
+        if (data.pet_id !== currentPetId) return;
+        // 如果已经有图表，则更新数据；否则初始化（但通常上面 REST 已经初始化，此处可选）
+        if (data.temps.length > 0) {
+            if (chart) {
+                chart.setOption({
+                    xAxis: { data: data.timestamps },
+                    series: [{ data: data.temps }, { data: data.humis }]
+                });
+            } else {
+                initChart(data.timestamps, data.temps, data.humis);
+            }
+            document.getElementById('tempVal').innerText = data.temps[data.temps.length-1];
+            document.getElementById('humiVal').innerText = data.humis[data.humis.length-1];
+        }
         const alertContainer = document.getElementById('alertList');
         alertContainer.innerHTML = '';
         if (data.alerts.length === 0) {
@@ -432,19 +530,17 @@
         } else {
             data.alerts.forEach(alert => addAlert(alert[0], alert[1], alert[2], alert[3] || ''));
         }
-        if (data.temps.length > 0) {
-            document.getElementById('tempVal').innerText = data.temps[data.temps.length-1];
-            document.getElementById('humiVal').innerText = data.humis[data.humis.length-1];
-        }
     });
 
     socket.on('new_sensor', (data) => {
+        if (data.pet_id !== currentPetId) return;
         document.getElementById('tempVal').innerText = data.temp;
         document.getElementById('humiVal').innerText = data.humi;
         updateChart(data.time, data.temp, data.humi);
     });
 
     socket.on('new_alert', (alert) => {
+        if (alert.pet_id !== currentPetId) return;
         addAlert(alert.time, alert.type, alert.message, alert.image);
         if (alert.image && alert.image !== '') {
             const imgEl = document.getElementById('latestImg');
@@ -480,7 +576,8 @@
     }
 
     document.getElementById('refreshCamBtn').onclick = () => {
-        socket.emit('camera_refresh', {});
+        if (!currentPetId) return;
+        socket.emit('camera_refresh', { pet_id: currentPetId });
         startCountdown(10);
         document.getElementById('noImgMsg').innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Capturing, please wait...';
         document.getElementById('noImgMsg').style.display = 'block';
@@ -489,20 +586,24 @@
 
     // 远程控制按钮
     document.getElementById('feedBtn').onclick = () => {
-        socket.emit('control', { device: 'feeder', action: 'feed' });
+        if (!currentPetId) return;
+        socket.emit('control', { pet_id: currentPetId, device: 'feeder', action: 'feed' });
         document.getElementById('feederStatus').innerText = 'Sending...';
     };
     document.getElementById('acOnBtn').onclick = () => {
-        socket.emit('control', { device: 'ac', action: 'on' });
+        if (!currentPetId) return;
+        socket.emit('control', { pet_id: currentPetId, device: 'ac', action: 'on' });
         document.getElementById('acStatus').innerText = 'Sending...';
     };
     document.getElementById('acOffBtn').onclick = () => {
-        socket.emit('control', { device: 'ac', action: 'off' });
+        if (!currentPetId) return;
+        socket.emit('control', { pet_id: currentPetId, device: 'ac', action: 'off' });
         document.getElementById('acStatus').innerText = 'Sending...';
     };
 
-    // 控制结果反馈（将中文“指令已发送”转为英文）
+    // 控制结果反馈
     socket.on('control_result', (data) => {
+        if (data.pet_id !== currentPetId) return;
         let statusText = data.status;
         if (statusText === '指令已发送') statusText = 'Command sent';
         if (data.device === 'feeder') {
@@ -516,10 +617,12 @@
 
     // 执行器实际状态反馈
     socket.on('feeder_status', (data) => {
+        if (data.pet_id !== currentPetId) return;
         document.getElementById('feederStatus').innerText = (data.status === 'success') ? 'Feed success' : 'Feed failed';
         setTimeout(() => { document.getElementById('feederStatus').innerText = 'Ready'; }, 3000);
     });
     socket.on('ac_status', (data) => {
+        if (data.pet_id !== currentPetId) return;
         let txt = '';
         if (data.status === 'on') txt = 'AC turned on';
         else if (data.status === 'off') txt = 'AC turned off';
