@@ -12,284 +12,727 @@
     <script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
     <style>
-        /* ---------- 全局样式 ---------- */
-        * {
+        /* ============================================================
+           Smart Pet Monitor — Enterprise Dashboard Theme v2
+           ============================================================ */
+
+        /* ---------- Design Tokens ---------- */
+        :root {
+            /* Surfaces */
+            --color-bg: #f5f6f8;
+            --color-bg-alt: #eef0f4;
+            --color-surface: #ffffff;
+            --color-surface-raised: #fcfcfd;
+
+            /* Borders */
+            --color-border: #e4e7ec;
+            --color-border-light: #f0f1f4;
+            --color-border-subtle: #f7f8f9;
+
+            /* Brand / Primary */
+            --color-primary: #4f46e5;
+            --color-primary-hover: #4338ca;
+            --color-primary-ring: rgba(79, 70, 229, 0.15);
+            --color-primary-subtle: #eef2ff;
+
+            /* Semantic */
+            --color-success: #059669;
+            --color-success-subtle: #ecfdf5;
+            --color-warning: #d97706;
+            --color-warning-subtle: #fffbeb;
+            --color-danger: #dc2626;
+            --color-danger-subtle: #fef2f2;
+
+            /* Data colors */
+            --color-temp: #ea580c;
+            --color-temp-subtle: #fff7ed;
+            --color-humidity: #0284c7;
+            --color-humidity-subtle: #f0f9ff;
+
+            /* Text */
+            --color-text-primary: #111827;
+            --color-text-secondary: #4b5563;
+            --color-text-tertiary: #6b7280;
+            --color-text-muted: #9ca3af;
+            --color-text-inverse: #ffffff;
+
+            /* Shadows */
+            --shadow-xs: 0 1px 2px 0 rgba(0,0,0,0.03);
+            --shadow-sm: 0 1px 3px 0 rgba(0,0,0,0.04), 0 1px 2px -1px rgba(0,0,0,0.03);
+            --shadow-md: 0 4px 8px -2px rgba(0,0,0,0.05), 0 2px 4px -2px rgba(0,0,0,0.04);
+            --shadow-lg: 0 12px 16px -4px rgba(0,0,0,0.06), 0 4px 6px -2px rgba(0,0,0,0.03);
+            --shadow-xl: 0 20px 24px -4px rgba(0,0,0,0.07), 0 8px 8px -4px rgba(0,0,0,0.03);
+            --shadow-card: 0 1px 3px 0 rgba(0,0,0,0.04), 0 1px 1px 0 rgba(0,0,0,0.02), 0 0 0 1px rgba(0,0,0,0.03);
+            --shadow-card-hover: 0 8px 16px -4px rgba(0,0,0,0.08), 0 4px 8px -2px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.04);
+
+            /* Radii */
+            --radius-xs: 0.375rem;
+            --radius-sm: 0.5rem;
+            --radius-md: 0.625rem;
+            --radius-lg: 0.75rem;
+            --radius-xl: 1rem;
+            --radius-2xl: 1.25rem;
+            --radius-3xl: 1.5rem;
+            --radius-full: 9999px;
+
+            /* Transitions */
+            --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* ---------- Reset & Base ---------- */
+        *, *::before, *::after {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
+        html {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
         body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #f5f7fc 0%, #eef2f9 100%);
-            padding: 2rem 1.5rem;
-            color: #1e293b;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background: var(--color-bg);
+            min-height: 100vh;
+            padding: 1.75rem 1.5rem 3rem;
+            color: var(--color-text-primary);
+            font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv09';
+            letter-spacing: -0.011em;
+            line-height: 1.5;
+        }
+
+        /* Subtle background texture */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 80% 50% at 50% -20%, rgba(79, 70, 229, 0.03), transparent),
+                radial-gradient(ellipse 60% 40% at 100% 100%, rgba(2, 132, 199, 0.02), transparent);
+            pointer-events: none;
+            z-index: 0;
         }
 
         .container {
             max-width: 1400px;
             margin: 0 auto;
+            position: relative;
+            z-index: 1;
         }
 
-        /* 头部区域 */
+        /* ---------- Header ---------- */
         .app-header {
-            margin-bottom: 2rem;
-            text-align: left;
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
+            gap: 1rem 1.5rem;
+            margin-bottom: 2rem;
+            padding: 1rem 1.5rem;
+            background: var(--color-surface);
+            border-radius: var(--radius-3xl);
+            box-shadow: var(--shadow-card);
         }
+
         .app-header h1 {
-            font-size: 1.8rem;
-            font-weight: 600;
-            background: linear-gradient(135deg, #2c3e66, #1a2a44);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            letter-spacing: -0.3px;
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: var(--color-text-primary);
+            letter-spacing: -0.025em;
             display: inline-flex;
             align-items: center;
-            gap: 12px;
+            gap: 0.75rem;
+            white-space: nowrap;
         }
+
         .app-header h1 i {
-            background: none;
-            color: #3b82f6;
-            font-size: 2rem;
-        }
-        .pet-selector {
-            background: white;
-            border-radius: 2rem;
-            padding: 0.5rem 1rem;
             display: inline-flex;
             align-items: center;
-            gap: 1rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            justify-content: center;
+            width: 2.5rem;
+            height: 2.5rem;
+            background: linear-gradient(135deg, #4f46e5 0%, #6366f1 50%, #818cf8 100%);
+            color: white;
+            font-size: 1.15rem;
+            border-radius: var(--radius-lg);
+            box-shadow: 0 4px 14px rgba(79, 70, 229, 0.28);
         }
+
+        /* Pet selector pill */
+        .pet-selector {
+            background: var(--color-bg);
+            border-radius: var(--radius-full);
+            padding: 0.375rem 0.375rem 0.375rem 1.1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.65rem;
+            border: 1px solid var(--color-border);
+            font-weight: 500;
+            font-size: 0.85rem;
+            color: var(--color-text-secondary);
+            transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+        }
+
+        .pet-selector:focus-within {
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px var(--color-primary-ring);
+        }
+
         .pet-selector select {
             font-family: 'Inter', sans-serif;
-            padding: 0.3rem 0.8rem;
-            border-radius: 1.5rem;
-            border: 1px solid #cbd5e1;
-            background: white;
+            font-weight: 600;
+            font-size: 0.85rem;
+            padding: 0.45rem 2rem 0.45rem 0.85rem;
+            border-radius: var(--radius-full);
+            border: 1px solid var(--color-border);
+            background: var(--color-surface);
+            color: var(--color-text-primary);
+            cursor: pointer;
+            -webkit-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.65rem center;
+            transition: all var(--transition-fast);
+            outline: none;
         }
+
+        .pet-selector select:hover {
+            border-color: #c4c7ce;
+        }
+
+        .pet-selector select:focus {
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px var(--color-primary-ring);
+        }
+
+        /* Subtitle banner */
         .sub {
-            color: #4b5563;
-            margin-top: 0.4rem;
-            font-size: 0.95rem;
-            border-left: 3px solid #3b82f6;
+            color: var(--color-text-tertiary);
+            margin-top: 0.45rem;
+            font-size: 0.8rem;
+            font-weight: 500;
+            border-left: 3px solid var(--color-primary);
             padding-left: 1rem;
             width: 100%;
+            letter-spacing: -0.005em;
+            opacity: 0.85;
         }
 
-        /* 卡片通用样式 */
+        /* ---------- Card Base ---------- */
         .card {
-            background: rgba(255,255,255,0.85);
-            backdrop-filter: blur(2px);
-            border-radius: 1.5rem;
-            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05), 0 8px 10px -6px rgba(0,0,0,0.02);
+            background: var(--color-surface);
+            border-radius: var(--radius-2xl);
+            box-shadow: var(--shadow-card);
             padding: 1.5rem;
-            transition: all 0.2s ease;
-            border: 1px solid rgba(255,255,255,0.6);
+            transition: box-shadow var(--transition-base);
         }
+
         .card:hover {
-            box-shadow: 0 20px 30px -12px rgba(0,0,0,0.1);
-            background: rgba(255,255,255,0.95);
+            box-shadow: var(--shadow-card-hover);
         }
+
         .card-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-bottom: 1.2rem;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--color-text-primary);
+            margin-bottom: 1.25rem;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            border-left: 4px solid #3b82f6;
-            padding-left: 0.75rem;
-        }
-        .card-title i {
-            color: #3b82f6;
-            font-size: 1.2rem;
+            gap: 0.55rem;
+            letter-spacing: -0.014em;
+            padding-bottom: 0.9rem;
+            border-bottom: 1px solid var(--color-border-light);
         }
 
-        /* 传感器卡片布局 */
+        .card-title i {
+            color: var(--color-primary);
+            font-size: 0.95rem;
+            opacity: 0.85;
+        }
+
+        /* ---------- Sensor Panel ---------- */
         .sensor-panel {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-        .sensor-card {
-            text-align: center;
-            background: white;
-            border-radius: 1.5rem;
-            padding: 1.5rem;
-            box-shadow: 0 5px 12px rgba(0,0,0,0.03);
-            border: 1px solid #eef2ff;
-        }
-        .sensor-label {
-            font-size: 1rem;
-            font-weight: 500;
-            color: #4b5563;
-            margin-bottom: 0.75rem;
-        }
-        .sensor-value {
-            font-size: 3rem;
-            font-weight: 700;
-            line-height: 1.2;
-        }
-        .temp-value {
-            color: #f97316;
-        }
-        .humi-value {
-            color: #0ea5e9;
-        }
-        .unit {
-            font-size: 1rem;
-            font-weight: 400;
-            color: #6b7280;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 1.75rem;
         }
 
-        /* 两列布局：历史图表 & 最新抓拍 */
+        .sensor-card {
+            position: relative;
+            text-align: center;
+            background: var(--color-surface);
+            border-radius: var(--radius-2xl);
+            padding: 1.75rem 1.5rem 1.5rem;
+            box-shadow: var(--shadow-card);
+            overflow: hidden;
+            transition: box-shadow var(--transition-base), transform var(--transition-base);
+            isolation: isolate;
+        }
+
+        .sensor-card:hover {
+            box-shadow: var(--shadow-card-hover);
+            transform: translateY(-1px);
+        }
+
+        /* Decorative background blob */
+        .sensor-card::before {
+            content: '';
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            opacity: 0.05;
+            pointer-events: none;
+            z-index: -1;
+            transition: opacity var(--transition-base);
+        }
+
+        .sensor-card:hover::before {
+            opacity: 0.09;
+        }
+
+        .sensor-card:first-child::before {
+            background: var(--color-temp);
+        }
+
+        .sensor-card:last-child::before {
+            background: var(--color-humidity);
+        }
+
+        /* Accent top bar on sensor cards */
+        .sensor-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 1.25rem;
+            right: 1.25rem;
+            height: 3px;
+            border-radius: 0 0 3px 3px;
+            opacity: 0.7;
+        }
+
+        .sensor-card:first-child::after {
+            background: linear-gradient(90deg, var(--color-temp), #fb923c);
+        }
+
+        .sensor-card:last-child::after {
+            background: linear-gradient(90deg, var(--color-humidity), #38bdf8);
+        }
+
+        .sensor-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--color-text-tertiary);
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            margin-bottom: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.45rem;
+        }
+
+        .sensor-label i {
+            font-size: 0.9rem;
+        }
+
+        .sensor-value {
+            font-size: 3.75rem;
+            font-weight: 800;
+            line-height: 1;
+            letter-spacing: -0.04em;
+            margin-bottom: 0.25rem;
+            font-feature-settings: 'tnum';
+            font-variant-numeric: tabular-nums;
+        }
+
+        .temp-value {
+            color: var(--color-temp);
+        }
+
+        .humi-value {
+            color: var(--color-humidity);
+        }
+
+        .unit {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--color-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-top: 0.15rem;
+        }
+
+        /* ---------- Two-Column Layout ---------- */
         .two-columns {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 1.8rem;
-            margin-bottom: 1.8rem;
+            gap: 1.25rem;
+            margin-bottom: 1.25rem;
         }
-        @media (max-width: 900px) {
+
+        @media (max-width: 920px) {
             .two-columns {
                 grid-template-columns: 1fr;
-                gap: 1.5rem;
+                gap: 1.25rem;
             }
         }
 
-        /* 图片区域 */
+        /* ---------- Snapshot Area ---------- */
         .img-container {
             text-align: center;
-            background: #fafcff;
-            border-radius: 1.2rem;
-            padding: 1rem;
-            margin-bottom: 1rem;
+            background: var(--color-bg);
+            border-radius: var(--radius-xl);
+            padding: 1.25rem;
+            margin-bottom: 1.15rem;
+            border: 1px solid var(--color-border-light);
+            position: relative;
+            min-height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
         }
+
         .img-container img {
             max-width: 100%;
-            border-radius: 1rem;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            border: 1px solid #e2e8f0;
+            max-height: 360px;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            border: 1px solid rgba(0,0,0,0.06);
+            transition: opacity var(--transition-base);
         }
+
         .btn-group {
             display: flex;
-            gap: 1rem;
+            gap: 0.65rem;
             justify-content: center;
-            margin-top: 1.2rem;
+            margin-top: 0.9rem;
             flex-wrap: wrap;
+            align-items: center;
         }
-        /* 按钮样式 */
+
+        /* ---------- Buttons ---------- */
         button {
             font-family: 'Inter', sans-serif;
-            font-weight: 500;
-            padding: 0.6rem 1.4rem;
-            border-radius: 2rem;
+            font-weight: 600;
+            font-size: 0.825rem;
+            padding: 0.55rem 1.2rem;
+            border-radius: var(--radius-lg);
             border: none;
             cursor: pointer;
-            transition: 0.2s;
-            font-size: 0.9rem;
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            background: white;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-            border: 1px solid #e2e8f0;
+            gap: 0.45rem;
+            transition: all var(--transition-fast);
+            letter-spacing: -0.01em;
+            white-space: nowrap;
+            user-select: none;
+            -webkit-user-select: none;
         }
+
+        button:active {
+            transform: scale(0.975);
+        }
+
         button i {
-            font-size: 1rem;
+            font-size: 0.9rem;
         }
+
         .btn-primary {
-            background: #3b82f6;
-            color: white;
-            border: none;
+            background: var(--color-primary);
+            color: var(--color-text-inverse);
+            box-shadow: 0 1px 3px rgba(79, 70, 229, 0.3), 0 1px 2px rgba(79, 70, 229, 0.2);
         }
+
         .btn-primary:hover {
-            background: #2563eb;
+            background: var(--color-primary-hover);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.35), 0 2px 4px rgba(79, 70, 229, 0.2);
             transform: translateY(-1px);
         }
+
         .btn-success {
-            background: #10b981;
-            color: white;
-            border: none;
+            background: var(--color-success);
+            color: var(--color-text-inverse);
+            box-shadow: 0 1px 3px rgba(5, 150, 105, 0.3), 0 1px 2px rgba(5, 150, 105, 0.2);
         }
+
         .btn-success:hover {
-            background: #059669;
+            background: #047857;
+            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.35), 0 2px 4px rgba(5, 150, 105, 0.2);
+            transform: translateY(-1px);
         }
+
         .btn-secondary {
-            background: #6c757d;
-            color: white;
-            border: none;
+            background: var(--color-text-secondary);
+            color: var(--color-text-inverse);
+            box-shadow: 0 1px 3px rgba(75, 85, 99, 0.25);
         }
+
         .btn-secondary:hover {
-            background: #5a6268;
+            background: #374151;
+            box-shadow: 0 4px 12px rgba(75, 85, 99, 0.3);
+            transform: translateY(-1px);
         }
+
         .btn-info {
-            background: #f1f5f9;
-            border: 1px solid #cbd5e1;
+            background: var(--color-surface);
+            color: var(--color-text-primary);
+            border: 1px solid var(--color-border);
+            box-shadow: var(--shadow-xs);
         }
+
         .btn-info:hover {
-            background: #e2e8f0;
+            background: var(--color-bg);
+            border-color: #c4c7ce;
+            box-shadow: var(--shadow-sm);
         }
-        /* 状态标签 */
+
+        /* ---------- Status Badge ---------- */
         .status-badge {
-            background: #f1f5f9;
-            border-radius: 2rem;
-            padding: 0.25rem 1rem;
-            font-size: 0.8rem;
-            font-weight: 500;
-            margin-left: 0.75rem;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: #f3f4f6;
+            color: var(--color-text-secondary);
+            border-radius: var(--radius-full);
+            padding: 0.3rem 0.9rem;
+            font-size: 0.775rem;
+            font-weight: 600;
+            margin-left: 0.5rem;
+            letter-spacing: -0.005em;
+            border: 1px solid var(--color-border);
+            transition: all var(--transition-fast);
         }
+
+        .status-badge::before {
+            content: '';
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #22c55e;
+            box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.25);
+            animation: pulse-dot 2.2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.35; transform: scale(0.85); }
+        }
+
+        /* ---------- Control Rows ---------- */
         .control-row {
             display: flex;
             align-items: center;
             flex-wrap: wrap;
-            margin: 0.8rem 0;
+            gap: 0.55rem;
+            margin: 0.85rem 0;
+            padding: 0.7rem 1rem;
+            background: var(--color-bg);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--color-border-light);
         }
-        /* 警报列表 */
+
+        .control-row:first-of-type {
+            margin-top: 0;
+        }
+
+        /* ---------- Alert List ---------- */
         .alert-list {
-            max-height: 320px;
+            max-height: 340px;
             overflow-y: auto;
-            padding-right: 0.5rem;
+            scrollbar-width: thin;
+            scrollbar-color: #d1d5db transparent;
         }
+
+        .alert-list::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .alert-list::-webkit-scrollbar-track {
+            background: transparent;
+            margin: 4px 0;
+        }
+
+        .alert-list::-webkit-scrollbar-thumb {
+            background: #d1d5db;
+            border-radius: 10px;
+        }
+
+        .alert-list::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af;
+        }
+
         .alert-item {
-            background: #fff9f0;
-            border-left: 4px solid #ef4444;
-            padding: 0.75rem 1rem;
-            border-radius: 1rem;
-            margin-bottom: 0.75rem;
-            transition: 0.1s;
+            background: var(--color-danger-subtle);
+            border-left: 3px solid var(--color-danger);
+            padding: 0.8rem 1rem;
+            border-radius: 0 var(--radius-md) var(--radius-md) 0;
+            margin-bottom: 0.6rem;
+            font-size: 0.85rem;
+            line-height: 1.55;
+            color: var(--color-text-primary);
+            transition: background var(--transition-fast), box-shadow var(--transition-fast);
+            animation: alertSlideIn 0.3s ease-out;
         }
+
+        @keyframes alertSlideIn {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .alert-item:hover {
+            background: #fee2e2;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+        }
+
         .alert-camera {
-            border-left-color: #f59e0b;
-            background: #fff7ed;
+            border-left-color: var(--color-warning);
+            background: var(--color-warning-subtle);
         }
+
+        .alert-camera:hover {
+            background: #fef3c7;
+        }
+
         .alert-time {
-            font-size: 0.7rem;
-            color: #6b7280;
-            margin-top: 0.3rem;
+            font-size: 0.72rem;
+            color: var(--color-text-muted);
+            margin-top: 0.35rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
         }
+
         .snapshot-thumb {
-            max-width: 180px;
-            border-radius: 0.5rem;
-            margin-top: 0.5rem;
+            max-width: 170px;
+            border-radius: var(--radius-sm);
+            margin-top: 0.55rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--color-border-light);
+            transition: transform var(--transition-fast);
         }
-        /* 图表容器 */
+
+        .snapshot-thumb:hover {
+            transform: scale(1.03);
+        }
+
+        /* ---------- Chart Container ---------- */
         .chart-container {
-            height: 320px;
+            height: 340px;
             width: 100%;
         }
+
+        /* ---------- Empty State ---------- */
+        #noImgMsg {
+            color: var(--color-text-muted);
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        /* ---------- Footer ---------- */
         footer {
-            margin-top: 2rem;
+            margin-top: 2.5rem;
             text-align: center;
             font-size: 0.75rem;
-            color: #6c757d;
+            color: var(--color-text-muted);
+            font-weight: 500;
+            letter-spacing: -0.005em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.35rem;
+            opacity: 0.7;
+        }
+
+        /* ---------- Responsive ---------- */
+        @media (max-width: 640px) {
+            body {
+                padding: 1rem 0.75rem 2rem;
+            }
+
+            .app-header {
+                padding: 0.9rem 1rem;
+                flex-direction: column;
+                align-items: flex-start;
+                border-radius: var(--radius-2xl);
+            }
+
+            .app-header h1 {
+                font-size: 1.2rem;
+            }
+
+            .app-header h1 i {
+                width: 2.2rem;
+                height: 2.2rem;
+                font-size: 1rem;
+            }
+
+            .sensor-panel {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .sensor-value {
+                font-size: 2.75rem;
+            }
+
+            .sensor-card {
+                padding: 1.35rem 1.15rem;
+            }
+
+            .sensor-card::after {
+                left: 0.9rem;
+                right: 0.9rem;
+            }
+
+            .card {
+                padding: 1.15rem;
+            }
+
+            .chart-container {
+                height: 260px;
+            }
+
+            button {
+                font-size: 0.8rem;
+                padding: 0.5rem 1rem;
+            }
+
+            .control-row {
+                padding: 0.6rem 0.8rem;
+                gap: 0.4rem;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .pet-selector {
+                padding: 0.3rem 0.3rem 0.3rem 0.8rem;
+                font-size: 0.78rem;
+                gap: 0.4rem;
+            }
+
+            .pet-selector select {
+                font-size: 0.78rem;
+                padding: 0.4rem 1.5rem 0.4rem 0.65rem;
+            }
+
+            .btn-group {
+                gap: 0.4rem;
+            }
+
+            .sensor-value {
+                font-size: 2.25rem;
+            }
         }
     </style>
 </head>
@@ -321,7 +764,7 @@
     <!-- 两列布局：历史趋势 + 最新抓拍 -->
     <div class="two-columns">
         <div class="card">
-            <div class="card-title"><i class="fas fa-chart-line"></i> History Trend (last 100 samples)</div>
+            <div class="card-title"><i class="fas fa-chart-line"></i> History Trend (last 10 samples)</div>
             <div id="chart" class="chart-container"></div>
         </div>
         <div class="card">
@@ -416,17 +859,86 @@
     function initChart(timestamps, temps, humis) {
         chart = echarts.init(document.getElementById('chart'));
         chart.setOption({
-            tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
-            legend: { data: ['Temperature (°C)', 'Humidity (%)'], left: 'left', itemWidth: 25 },
-            grid: { containLabel: true, left: '5%', right: '5%', top: 15, bottom: 10 },
-            xAxis: { type: 'category', data: timestamps, axisLabel: { rotate: 30, fontSize: 10 } },
+            color: ['#ea580c', '#0284c7'],
+            tooltip: {
+                trigger: 'axis',
+                backgroundColor: '#ffffff',
+                borderColor: '#e4e7ec',
+                borderWidth: 1,
+                textStyle: { color: '#111827', fontSize: 12, fontFamily: 'Inter, sans-serif' },
+                boxShadow: '0 8px 16px -4px rgba(0,0,0,0.08)',
+                axisPointer: { type: 'cross', crossStyle: { color: '#9ca3af' } }
+            },
+            legend: {
+                data: ['Temperature (°C)', 'Humidity (%)'],
+                bottom: 0,
+                left: 'center',
+                itemWidth: 28,
+                itemHeight: 3,
+                textStyle: { color: '#4b5563', fontSize: 11, fontFamily: 'Inter, sans-serif', fontWeight: 500 },
+                icon: 'roundRect'
+            },
+            grid: { containLabel: true, left: '3%', right: '5%', top: 12, bottom: 36 },
+            xAxis: {
+                type: 'category',
+                data: timestamps,
+                axisLine: { lineStyle: { color: '#e4e7ec' } },
+                axisTick: { show: false },
+                axisLabel: { rotate: 25, fontSize: 10, color: '#6b7280', fontFamily: 'Inter, sans-serif', fontWeight: 500 },
+                splitLine: { show: false }
+            },
             yAxis: [
-                { type: 'value', name: 'Temperature (°C)', nameLocation: 'middle', nameGap: 35 },
-                { type: 'value', name: 'Humidity (%)', nameLocation: 'middle', nameGap: 35 }
+                {
+                    type: 'value',
+                    name: '°C',
+                    nameTextStyle: { color: '#6b7280', fontSize: 10, fontFamily: 'Inter, sans-serif', fontWeight: 600 },
+                    axisLine: { show: false },
+                    axisTick: { show: false },
+                    axisLabel: { fontSize: 10, color: '#6b7280', fontFamily: 'Inter, sans-serif', fontWeight: 500 },
+                    splitLine: { lineStyle: { color: '#f0f1f4', type: 'dashed' } }
+                },
+                {
+                    type: 'value',
+                    name: '%',
+                    nameTextStyle: { color: '#6b7280', fontSize: 10, fontFamily: 'Inter, sans-serif', fontWeight: 600 },
+                    axisLine: { show: false },
+                    axisTick: { show: false },
+                    axisLabel: { fontSize: 10, color: '#6b7280', fontFamily: 'Inter, sans-serif', fontWeight: 500 },
+                    splitLine: { show: false }
+                }
             ],
             series: [
-                { name: 'Temperature (°C)', type: 'line', data: temps, smooth: true, lineStyle: { color: '#f97316', width: 2 }, symbol: 'circle', symbolSize: 5 },
-                { name: 'Humidity (%)', type: 'line', data: humis, smooth: true, lineStyle: { color: '#0ea5e9', width: 2 }, yAxisIndex: 1, symbol: 'diamond', symbolSize: 5 }
+                {
+                    name: 'Temperature (°C)',
+                    type: 'line',
+                    data: temps,
+                    smooth: true,
+                    symbol: 'circle',
+                    symbolSize: 6,
+                    lineStyle: { color: '#ea580c', width: 2.5, cap: 'round' },
+                    itemStyle: { color: '#ea580c', borderColor: '#ffffff', borderWidth: 2 },
+                    areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                        { offset: 0, color: 'rgba(234, 88, 12, 0.12)' },
+                        { offset: 1, color: 'rgba(234, 88, 12, 0.0)' }
+                    ])},
+                    emphasis: { focus: 'series' }
+                },
+                {
+                    name: 'Humidity (%)',
+                    type: 'line',
+                    yAxisIndex: 1,
+                    data: humis,
+                    smooth: true,
+                    symbol: 'circle',
+                    symbolSize: 6,
+                    lineStyle: { color: '#0284c7', width: 2.5, cap: 'round' },
+                    itemStyle: { color: '#0284c7', borderColor: '#ffffff', borderWidth: 2 },
+                    areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                        { offset: 0, color: 'rgba(2, 132, 199, 0.12)' },
+                        { offset: 1, color: 'rgba(2, 132, 199, 0.0)' }
+                    ])},
+                    emphasis: { focus: 'series' }
+                }
             ]
         });
     }
@@ -437,7 +949,7 @@
         option.xAxis[0].data.push(newTime);
         option.series[0].data.push(newTemp);
         option.series[1].data.push(newHumi);
-        if (option.xAxis[0].data.length > 100) {
+        if (option.xAxis[0].data.length > 10) {
             option.xAxis[0].data.shift();
             option.series[0].data.shift();
             option.series[1].data.shift();
@@ -473,7 +985,7 @@
 
     function loadPetData(petId) {
         // 通过 REST API 加载历史数据和警报（快速显示）
-        fetch(`/api/history/${petId}?limit=100`)
+        fetch(`/api/history/${petId}?limit=10`)
             .then(res => res.json())
             .then(data => {
                 if (chart) {
