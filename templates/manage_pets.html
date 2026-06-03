@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Pets</title>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f5f7fc;
+            padding: 2rem;
+            margin: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 2rem;
+            padding: 2rem;
+            box-shadow: 0 20px 35px -10px rgba(0,0,0,0.1);
+        }
+        h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .pet-item {
+            border: 1px solid #e2e8f0;
+            border-radius: 1rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background: #fefefe;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        .pet-info {
+            flex: 1;
+        }
+        .pet-actions button {
+            margin-left: 0.5rem;
+            padding: 0.3rem 0.8rem;
+            border-radius: 2rem;
+            border: none;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+        }
+        .btn-edit {
+            background: #4f46e5;
+            color: white;
+        }
+        .btn-delete {
+            background: #dc2626;
+            color: white;
+        }
+        .btn-back {
+            background: #6c757d;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 1rem;
+        }
+        hr {
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>🐾 Manage Pets</h2>
+    <div id="petsList"></div>
+    <a href="/dashboard" class="btn-back">← Back to Dashboard</a>
+</div>
+
+<script>
+    async function loadPets() {
+        const res = await fetch('/api/pets');
+        const pets = await res.json();
+        const container = document.getElementById('petsList');
+        container.innerHTML = '';
+        for (const pet of pets) {
+            const div = document.createElement('div');
+            div.className = 'pet-item';
+            div.innerHTML = `
+                <div class="pet-info">
+                    <strong>${pet.name} (${pet.species})</strong><br>
+                    <small>ID: ${pet.id} | Temp threshold: ${pet.temp_max}°C | Humidity threshold: ${pet.humi_min}%</small>
+                </div>
+                <div class="pet-actions">
+                    <button class="btn-edit" onclick="editPet(${pet.id}, '${pet.name}', '${pet.species}', ${pet.temp_max}, ${pet.humi_min})">Edit</button>
+                    <button class="btn-delete" onclick="deletePet(${pet.id})">Delete</button>
+                </div>
+            `;
+            container.appendChild(div);
+        }
+    }
+
+    window.editPet = async (id, name, species, tempMax, humiMin) => {
+        const newName = prompt("New name:", name);
+        if (newName === null) return;
+        const newSpecies = prompt("New species:", species);
+        if (newSpecies === null) return;
+        const newTemp = prompt("New temperature threshold (°C):", tempMax);
+        if (newTemp === null) return;
+        const newHumi = prompt("New humidity threshold (%):", humiMin);
+        if (newHumi === null) return;
+
+        const res = await fetch(`/api/pets/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                name: newName,
+                species: newSpecies,
+                temp_max: parseFloat(newTemp),
+                humi_min: parseFloat(newHumi)
+            })
+        });
+        if (res.ok) {
+            alert("Pet updated.");
+            loadPets();
+        } else {
+            alert("Update failed.");
+        }
+    };
+
+    window.deletePet = async (id) => {
+        if (!confirm("Delete this pet? All its data will be lost.")) return;
+        const res = await fetch(`/api/pets/${id}`, { method: 'DELETE' });
+        if (res.ok) {
+            alert("Pet deleted.");
+            loadPets();
+        } else {
+            const err = await res.json();
+            alert(err.error || "Delete failed.");
+        }
+    };
+
+    loadPets();
+</script>
+</body>
+</html>

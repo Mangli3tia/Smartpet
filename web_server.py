@@ -13,7 +13,8 @@ from config import (MQTT_BROKER, MQTT_PORT,
                     TOPIC_CAMERA_REQUEST,
                     DB_FILE, WEB_PORT)
 from database import (init_db, get_pets, get_recent_sensor_data, get_recent_alerts,
-                      get_last_sensor_id, get_last_alert_id, get_pet_thresholds)
+                      get_last_sensor_id, get_last_alert_id, get_pet_thresholds,
+                      create_pet, update_pet_thresholds, get_devices)
 
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*")
@@ -49,13 +50,108 @@ status_client.on_message = on_status_message
 status_client.connect(MQTT_BROKER, MQTT_PORT, 60)
 status_client.loop_start()
 
+# ---------- 数据库迁移 ----------
+def migrate_database():
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    c.execute("PRAGMA table_info(pets)")
+    columns = [col[1] for col in c.fetchall()]
+    if 'type' not in columns:
+        c.execute("ALTER TABLE pets ADD COLUMN type TEXT DEFAULT 'default'")
+    if 'temp_sensor_id' not in columns:
+        c.execute("ALTER TABLE pets ADD COLUMN temp_sensor_id INTEGER")
+    if 'camera_id' not in columns:
+        c.execute("ALTER TABLE pets ADD COLUMN camera_id INTEGER")
+    conn.commit()
+    conn.close()
+
+# ---------- 页面路由 ----------
 @app.route('/')
-def index():
+def landing():
+    return render_template('index.html')
+
+@app.route('/dashboard')
+def dashboard():
     return render_template('dashboard.html')
+
+@app.route('/create-pet')
+def create_pet_page():
+    return render_template('create_pet.html')
+
+@app.route('/manage-pets')
+def manage_pets():
+    return render_template('manage_pets.html')
+
+# ---------- API 路由 ----------
+@app.route('/api/devices')
+def api_devices():
+    return jsonify(get_devices())
 
 @app.route('/api/pets')
 def api_pets():
     return jsonify(get_pets())
+
+@app.route('/api/pets', methods=['POST'])
+def api_create_pet():
+    data = request.json
+    name = data.get('name')
+    species = data.get('species', 'Custom')
+    temp_sensor_id = data.get('temp_sensor_id')
+    camera_id = data.get('camera_id')
+    temp_max = data.get('temp_max', 30.0)
+    humi_min = data.get('humi_min', 40.0)
+    if not name:
+        return jsonify({"error": "Pet name required"}), 400
+    pet_id = create_pet(name, species, temp_max, humi_min, temp_sensor_id, camera_id)
+    return jsonify({"pet_id": pet_id, "message": "Pet created"}), 201
+
+@app.route('/api/pets/<int:pet_id>', methods=['PUT'])
+def api_update_pet(pet_id):
+    data = request.json
+    name = data.get('name')
+    species = data.get('species')
+    temp_max = data.get('temp_max')
+    humi_min = data.get('humi_min')
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    if name:
+        c.execute("UPDATE pets SET name = ? WHERE id = ?", (name, pet_id))
+    if species:
+        c.execute("UPDATE pets SET species = ? WHERE id = ?", (species, pet_id))
+    if temp_max is not None:
+        c.execute("UPDATE pets SET temp_max = ? WHERE id = ?", (temp_max, pet_id))
+    if humi_min is not None:
+        c.execute("UPDATE pets SET humi_min = ? WHERE id = ?", (humi_min, pet_id))
+    conn.commit()
+    conn.close()
+    return jsonify({"message": "Pet updated"})
+
+@app.route('/api/pets/<int:pet_id>', methods=['DELETE'])
+def api_delete_pet(pet_id):
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    c.execute("SELECT type FROM pets WHERE id=?", (pet_id,))
+    row = c.fetchone()
+    if not row:
+        return jsonify({"error": "Pet not found"}), 404
+    if row[0] == 'default':
+        return jsonify({"error": "Cannot delete demo pet"}), 403
+    c.execute("DELETE FROM pets WHERE id=?", (pet_id,))
+    c.execute("DELETE FROM sensor_data WHERE pet_id=?", (pet_id,))
+    c.execute("DELETE FROM alerts WHERE pet_id=?", (pet_id,))
+    conn.commit()
+    conn.close()
+    return jsonify({"message": "Pet deleted"})
+
+@app.route('/api/pets/<int:pet_id>/thresholds', methods=['PUT'])
+def api_update_thresholds(pet_id):
+    data = request.json
+    temp_max = data.get('temp_max')
+    humi_min = data.get('humi_min')
+    if temp_max is None and humi_min is None:
+        return jsonify({"error": "No threshold provided"}), 400
+    update_pet_thresholds(pet_id, temp_max, humi_min)
+    return jsonify({"message": "Thresholds updated"})
 
 @app.route('/api/history/<int:pet_id>')
 def api_history(pet_id):
@@ -72,6 +168,7 @@ def api_alerts(pet_id):
     rows = get_recent_alerts(pet_id, limit)
     return jsonify([{'time': r[0], 'type': r[1], 'message': r[2], 'image': r[3]} for r in rows])
 
+# ---------- SocketIO 事件 ----------
 @socketio.on('get_initial_data')
 def handle_initial_data(data):
     pet_id = data.get('pet_id')
@@ -115,8 +212,8 @@ def handle_control(data):
         command_client.publish(topic, action)
         emit('control_result', {'pet_id': pet_id, 'device': 'ac', 'status': 'Command sent'})
 
+# ---------- 后台轮询 ----------
 def background_worker():
-    """轮询所有宠物的新数据并推送到前端"""
     with app.app_context():
         while True:
             pets = get_pets()
@@ -151,6 +248,7 @@ def background_worker():
 
 if __name__ == '__main__':
     init_db()
+    migrate_database()
     pets = get_pets()
     for pet in pets:
         last_sensor_id[pet['id']] = get_last_sensor_id(pet['id'])

@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create New Pet - Smart Pet Monitor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f7fc;
+            padding: 2rem 1.5rem;
+            color: #1e293b;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 2rem;
+            box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #2c3e66, #1a2a44);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .sub {
+            color: #4b5563;
+            margin-bottom: 1.8rem;
+            font-size: 0.9rem;
+            border-left: 3px solid #4f46e5;
+            padding-left: 1rem;
+        }
+
+        .step {
+            margin-bottom: 2rem;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 1.5rem;
+        }
+
+        .step:last-of-type {
+            border-bottom: none;
+        }
+
+        .step h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #4f46e5;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .step h3 i {
+            font-size: 1.2rem;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.85rem;
+            margin-top: 1rem;
+            margin-bottom: 0.4rem;
+            color: #334155;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 0.7rem 1rem;
+            border-radius: 0.75rem;
+            border: 1px solid #cbd5e1;
+            font-family: inherit;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            background: #ffffff;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .device-item {
+            background: #f8fafc;
+            border-radius: 0.75rem;
+            padding: 0.6rem 1rem;
+            margin-bottom: 0.6rem;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            transition: background 0.2s;
+        }
+
+        .device-item:hover {
+            background: #f1f5f9;
+        }
+
+        .device-item input {
+            width: auto;
+            margin: 0;
+            flex-shrink: 0;
+        }
+
+        .device-name {
+            font-weight: 500;
+            flex: 1;
+            color: #0f172a;
+        }
+
+        .btn {
+            font-family: inherit;
+            background: #4f46e5;
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 2rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            margin-top: 1rem;
+            width: 100%;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        .btn:hover {
+            background: #4338ca;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .message {
+            margin-top: 1rem;
+            padding: 0.8rem;
+            border-radius: 0.75rem;
+            display: none;
+            font-size: 0.85rem;
+        }
+
+        .success {
+            background: #dcfce7;
+            color: #166534;
+            border-left: 4px solid #22c55e;
+        }
+
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+            border-left: 4px solid #ef4444;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 1.5rem;
+            text-align: center;
+            width: 100%;
+            color: #4f46e5;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>🐱 Create New Pet</h2>
+    <div class="sub">Bind hardware devices and set custom alert rules</div>
+
+    <!-- Step 1: Basic Info -->
+    <div class="step">
+        <h3><i class="fas fa-paw"></i> 1. Basic Information</h3>
+        <label>Pet Name</label>
+        <input type="text" id="petName" placeholder="e.g., Whiskers, Buddy" autocomplete="off">
+        <label>Species</label>
+        <select id="petSpecies">
+            <option value="Cat">Cat</option>
+            <option value="Dog">Dog</option>
+            <option value="Other">Other</option>
+        </select>
+    </div>
+
+    <!-- Step 2: Select Temperature/Humidity Sensor -->
+    <div class="step">
+        <h3><i class="fas fa-microchip"></i> 2. Select Temperature/Humidity Sensor</h3>
+        <div id="sensorList"></div>
+    </div>
+
+    <!-- Step 3: Select Camera -->
+    <div class="step">
+        <h3><i class="fas fa-camera"></i> 3. Select Camera</h3>
+        <div id="cameraList"></div>
+    </div>
+
+    <!-- Step 4: Custom Alert Rules (Optional) -->
+    <div class="step">
+        <h3><i class="fas fa-sliders-h"></i> 4. Custom Alert Rules (Optional)</h3>
+        <label>Temperature threshold (°C) – default 30.0</label>
+        <input type="number" step="0.1" id="tempMax" value="30.0">
+        <label>Humidity threshold (%) – default 40.0</label>
+        <input type="number" step="0.1" id="humiMin" value="40.0">
+    </div>
+
+    <button class="btn" id="createBtn">✨ Create Pet & Save</button>
+    <div id="message" class="message"></div>
+    <a href="/" class="back-link">← Back to Main Menu</a>
+</div>
+
+<script>
+    let sensors = [];
+    let cameras = [];
+
+    async function loadDevices() {
+        try {
+            const res = await fetch('/api/devices');
+            if (!res.ok) throw new Error('Failed to fetch devices');
+            const devices = await res.json();
+
+            sensors = devices.filter(d => d.type === 'temp_humi');
+            cameras = devices.filter(d => d.type === 'camera');
+
+            const sensorContainer = document.getElementById('sensorList');
+            sensorContainer.innerHTML = '';
+            if (sensors.length === 0) {
+                sensorContainer.innerHTML = '<div class="device-item">No sensors available.</div>';
+            } else {
+                sensors.forEach(sensor => {
+                    const div = document.createElement('div');
+                    div.className = 'device-item';
+                    div.innerHTML = `
+                        <input type="radio" name="sensorSelect" value="${sensor.id}" id="sensor_${sensor.id}">
+                        <label for="sensor_${sensor.id}" class="device-name">${escapeHtml(sensor.name)}</label>
+                    `;
+                    sensorContainer.appendChild(div);
+                });
+            }
+
+            const cameraContainer = document.getElementById('cameraList');
+            cameraContainer.innerHTML = '';
+            if (cameras.length === 0) {
+                cameraContainer.innerHTML = '<div class="device-item">No cameras available.</div>';
+            } else {
+                cameras.forEach(camera => {
+                    const div = document.createElement('div');
+                    div.className = 'device-item';
+                    div.innerHTML = `
+                        <input type="radio" name="cameraSelect" value="${camera.id}" id="camera_${camera.id}">
+                        <label for="camera_${camera.id}" class="device-name">${escapeHtml(camera.name)}</label>
+                    `;
+                    cameraContainer.appendChild(div);
+                });
+            }
+        } catch (err) {
+            console.error(err);
+            document.getElementById('sensorList').innerHTML = '<div class="device-item">Error loading devices.</div>';
+            document.getElementById('cameraList').innerHTML = '<div class="device-item">Error loading devices.</div>';
+        }
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    function showMessage(msg, type) {
+        const msgDiv = document.getElementById('message');
+        msgDiv.textContent = msg;
+        msgDiv.className = `message ${type}`;
+        msgDiv.style.display = 'block';
+        setTimeout(() => {
+            msgDiv.style.display = 'none';
+        }, 3000);
+    }
+
+    document.getElementById('createBtn').onclick = async () => {
+        const name = document.getElementById('petName').value.trim();
+        if (!name) {
+            showMessage('Please enter a pet name', 'error');
+            return;
+        }
+
+        const selectedSensor = document.querySelector('input[name="sensorSelect"]:checked');
+        if (!selectedSensor) {
+            showMessage('Please select a temperature/humidity sensor', 'error');
+            return;
+        }
+
+        const selectedCamera = document.querySelector('input[name="cameraSelect"]:checked');
+        if (!selectedCamera) {
+            showMessage('Please select a camera', 'error');
+            return;
+        }
+
+        const sensorId = parseInt(selectedSensor.value);
+        const cameraId = parseInt(selectedCamera.value);
+        const species = document.getElementById('petSpecies').value;
+        const tempMax = parseFloat(document.getElementById('tempMax').value);
+        const humiMin = parseFloat(document.getElementById('humiMin').value);
+
+        const payload = {
+            name: name,
+            species: species,
+            temp_sensor_id: sensorId,
+            camera_id: cameraId,
+            temp_max: tempMax,
+            humi_min: humiMin
+        };
+
+        try {
+            const res = await fetch('/api/pets', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if (res.ok) {
+                showMessage(`✅ Pet "${name}" created successfully! Redirecting...`, 'success');
+                setTimeout(() => {
+                    window.location.href = `/dashboard?pet_id=${data.pet_id}`;
+                }, 1500);
+            } else {
+                showMessage(`Error: ${data.error || 'Unknown error'}`, 'error');
+            }
+        } catch (err) {
+            console.error(err);
+            showMessage('Network error. Please check backend.', 'error');
+        }
+    };
+
+    loadDevices();
+</script>
+</body>
+</html>

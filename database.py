@@ -26,25 +26,45 @@ def init_db():
                   photo TEXT,
                   temp_max REAL,
                   humi_min REAL,
-                  created_at TEXT)''')
+                  created_at TEXT,
+                  type TEXT DEFAULT 'default',
+                  temp_sensor_id INTEGER,
+                  camera_id INTEGER)''')
     # 插入默认宠物（如果为空）
-    c.execute("SELECT COUNT(*) FROM pets")
+    c.execute("SELECT COUNT(*) FROM pets WHERE type='default'")
     if c.fetchone()[0] == 0:
-        c.execute("INSERT INTO pets (name, species, temp_max, humi_min, created_at) VALUES (?,?,?,?,?)",
-                  ("Fluffy", "Cat", DEFAULT_TEMP_MAX, DEFAULT_HUMI_MIN, datetime.now().isoformat()))
-        c.execute("INSERT INTO pets (name, species, temp_max, humi_min, created_at) VALUES (?,?,?,?,?)",
-                  ("Buddy", "Dog", DEFAULT_TEMP_MAX, DEFAULT_HUMI_MIN, datetime.now().isoformat()))
+        now = datetime.now().isoformat()
+        c.execute("INSERT INTO pets (name, species, temp_max, humi_min, created_at, type) VALUES (?,?,?,?,?,?)",
+                  ("Fluffy", "DemoCat", DEFAULT_TEMP_MAX, DEFAULT_HUMI_MIN, now, "default"))
+        c.execute("INSERT INTO pets (name, species, temp_max, humi_min, created_at, type) VALUES (?,?,?,?,?,?)",
+                  ("Buddy", "DemoDog", DEFAULT_TEMP_MAX, DEFAULT_HUMI_MIN, now, "default"))
     conn.commit()
     conn.close()
 
 def get_pets():
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
-    c.execute("SELECT id, name, species, age, photo, temp_max, humi_min FROM pets")
+    c.execute("SELECT id, name, species, age, photo, temp_max, humi_min, type FROM pets")
     rows = c.fetchall()
     conn.close()
     return [{"id": r[0], "name": r[1], "species": r[2], "age": r[3], "photo": r[4],
-             "temp_max": r[5], "humi_min": r[6]} for r in rows]
+             "temp_max": r[5], "humi_min": r[6], "type": r[7]} for r in rows]
+
+def get_default_pets():
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    c.execute("SELECT id, name FROM pets WHERE type='default'")
+    rows = c.fetchall()
+    conn.close()
+    return [{"id": r[0], "name": r[1]} for r in rows]
+
+def get_custom_pets():
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    c.execute("SELECT id, name FROM pets WHERE type='custom'")
+    rows = c.fetchall()
+    conn.close()
+    return [{"id": r[0], "name": r[1]} for r in rows]
 
 def get_pet_thresholds(pet_id):
     conn = sqlite3.connect(DB_FILE)
@@ -55,6 +75,34 @@ def get_pet_thresholds(pet_id):
     if row:
         return {"temp_max": row[0], "humi_min": row[1]}
     return {"temp_max": DEFAULT_TEMP_MAX, "humi_min": DEFAULT_HUMI_MIN}
+
+def create_pet(name, species, temp_max, humi_min, temp_sensor_id=None, camera_id=None):
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    now = datetime.now().isoformat()
+    c.execute("""INSERT INTO pets (name, species, temp_max, humi_min, created_at, type, temp_sensor_id, camera_id)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+              (name, species, temp_max, humi_min, now, "custom", temp_sensor_id, camera_id))
+    pet_id = c.lastrowid
+    conn.commit()
+    conn.close()
+    return pet_id
+
+def update_pet_thresholds(pet_id, temp_max=None, humi_min=None):
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    if temp_max is not None:
+        c.execute("UPDATE pets SET temp_max = ? WHERE id = ?", (temp_max, pet_id))
+    if humi_min is not None:
+        c.execute("UPDATE pets SET humi_min = ? WHERE id = ?", (humi_min, pet_id))
+    conn.commit()
+    conn.close()
+
+def get_devices():
+    return [
+        {"id": 1, "name": "DHT22 Sensor #1", "type": "temp_humi"},
+        {"id": 2, "name": "USB Camera #1", "type": "camera"}
+    ]
 
 def save_sensor_data(pet_id, temp, humi):
     conn = sqlite3.connect(DB_FILE)

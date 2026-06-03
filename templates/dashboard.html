@@ -18,54 +18,31 @@
 
         /* ---------- Design Tokens ---------- */
         :root {
-            /* Surfaces */
             --color-bg: #f5f6f8;
             --color-bg-alt: #eef0f4;
             --color-surface: #ffffff;
             --color-surface-raised: #fcfcfd;
-
-            /* Borders */
             --color-border: #e4e7ec;
             --color-border-light: #f0f1f4;
-            --color-border-subtle: #f7f8f9;
-
-            /* Brand / Primary */
             --color-primary: #4f46e5;
             --color-primary-hover: #4338ca;
             --color-primary-ring: rgba(79, 70, 229, 0.15);
-            --color-primary-subtle: #eef2ff;
-
-            /* Semantic */
             --color-success: #059669;
-            --color-success-subtle: #ecfdf5;
             --color-warning: #d97706;
-            --color-warning-subtle: #fffbeb;
             --color-danger: #dc2626;
-            --color-danger-subtle: #fef2f2;
-
-            /* Data colors */
             --color-temp: #ea580c;
-            --color-temp-subtle: #fff7ed;
             --color-humidity: #0284c7;
-            --color-humidity-subtle: #f0f9ff;
-
-            /* Text */
             --color-text-primary: #111827;
             --color-text-secondary: #4b5563;
             --color-text-tertiary: #6b7280;
             --color-text-muted: #9ca3af;
             --color-text-inverse: #ffffff;
-
-            /* Shadows */
             --shadow-xs: 0 1px 2px 0 rgba(0,0,0,0.03);
             --shadow-sm: 0 1px 3px 0 rgba(0,0,0,0.04), 0 1px 2px -1px rgba(0,0,0,0.03);
             --shadow-md: 0 4px 8px -2px rgba(0,0,0,0.05), 0 2px 4px -2px rgba(0,0,0,0.04);
             --shadow-lg: 0 12px 16px -4px rgba(0,0,0,0.06), 0 4px 6px -2px rgba(0,0,0,0.03);
-            --shadow-xl: 0 20px 24px -4px rgba(0,0,0,0.07), 0 8px 8px -4px rgba(0,0,0,0.03);
             --shadow-card: 0 1px 3px 0 rgba(0,0,0,0.04), 0 1px 1px 0 rgba(0,0,0,0.02), 0 0 0 1px rgba(0,0,0,0.03);
             --shadow-card-hover: 0 8px 16px -4px rgba(0,0,0,0.08), 0 4px 8px -2px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.04);
-
-            /* Radii */
             --radius-xs: 0.375rem;
             --radius-sm: 0.5rem;
             --radius-md: 0.625rem;
@@ -74,27 +51,13 @@
             --radius-2xl: 1.25rem;
             --radius-3xl: 1.5rem;
             --radius-full: 9999px;
-
-            /* Transitions */
             --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
             --transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
-            --transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* ---------- Reset & Base ---------- */
-        *, *::before, *::after {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        html {
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-        }
-
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            font-family: 'Inter', system-ui, sans-serif;
             background: var(--color-bg);
             min-height: 100vh;
             padding: 1.75rem 1.5rem 3rem;
@@ -103,27 +66,17 @@
             letter-spacing: -0.011em;
             line-height: 1.5;
         }
-
-        /* Subtle background texture */
         body::before {
             content: '';
             position: fixed;
             inset: 0;
-            background:
-                radial-gradient(ellipse 80% 50% at 50% -20%, rgba(79, 70, 229, 0.03), transparent),
-                radial-gradient(ellipse 60% 40% at 100% 100%, rgba(2, 132, 199, 0.02), transparent);
+            background: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(79,70,229,0.03), transparent), radial-gradient(ellipse 60% 40% at 100% 100%, rgba(2,132,199,0.02), transparent);
             pointer-events: none;
             z-index: 0;
         }
+        .container { max-width: 1400px; margin: 0 auto; position: relative; z-index: 1; }
 
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            position: relative;
-            z-index: 1;
-        }
-
-        /* ---------- Header ---------- */
+        /* Header */
         .app-header {
             display: flex;
             justify-content: space-between;
@@ -136,18 +89,14 @@
             border-radius: var(--radius-3xl);
             box-shadow: var(--shadow-card);
         }
-
         .app-header h1 {
             font-size: 1.35rem;
             font-weight: 700;
-            color: var(--color-text-primary);
-            letter-spacing: -0.025em;
             display: inline-flex;
             align-items: center;
             gap: 0.75rem;
             white-space: nowrap;
         }
-
         .app-header h1 i {
             display: inline-flex;
             align-items: center;
@@ -158,10 +107,8 @@
             color: white;
             font-size: 1.15rem;
             border-radius: var(--radius-lg);
-            box-shadow: 0 4px 14px rgba(79, 70, 229, 0.28);
+            box-shadow: 0 4px 14px rgba(79,70,229,0.28);
         }
-
-        /* Pet selector pill */
         .pet-selector {
             background: var(--color-bg);
             border-radius: var(--radius-full);
@@ -172,15 +119,7 @@
             border: 1px solid var(--color-border);
             font-weight: 500;
             font-size: 0.85rem;
-            color: var(--color-text-secondary);
-            transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
         }
-
-        .pet-selector:focus-within {
-            border-color: var(--color-primary);
-            box-shadow: 0 0 0 3px var(--color-primary-ring);
-        }
-
         .pet-selector select {
             font-family: 'Inter', sans-serif;
             font-weight: 600;
@@ -191,25 +130,24 @@
             background: var(--color-surface);
             color: var(--color-text-primary);
             cursor: pointer;
-            -webkit-appearance: none;
             appearance: none;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
             background-repeat: no-repeat;
             background-position: right 0.65rem center;
-            transition: all var(--transition-fast);
-            outline: none;
         }
-
-        .pet-selector select:hover {
-            border-color: #c4c7ce;
+        #editThresholdBtn, #managePetsBtn {
+            margin-left: 0.5rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: var(--color-primary);
+            transition: transform var(--transition-fast);
         }
-
-        .pet-selector select:focus {
-            border-color: var(--color-primary);
-            box-shadow: 0 0 0 3px var(--color-primary-ring);
+        #editThresholdBtn:hover, #managePetsBtn:hover {
+            transform: scale(1.05);
+            color: var(--color-primary-hover);
         }
-
-        /* Subtitle banner */
         .sub {
             color: var(--color-text-tertiary);
             margin-top: 0.45rem;
@@ -218,50 +156,37 @@
             border-left: 3px solid var(--color-primary);
             padding-left: 1rem;
             width: 100%;
-            letter-spacing: -0.005em;
-            opacity: 0.85;
         }
 
-        /* ---------- Card Base ---------- */
+        /* Cards */
         .card {
             background: var(--color-surface);
             border-radius: var(--radius-2xl);
             box-shadow: var(--shadow-card);
             padding: 1.5rem;
             transition: box-shadow var(--transition-base);
+            margin-bottom: 1.8rem;
         }
-
-        .card:hover {
-            box-shadow: var(--shadow-card-hover);
-        }
-
+        .card:hover { box-shadow: var(--shadow-card-hover); }
         .card-title {
             font-size: 0.95rem;
             font-weight: 700;
-            color: var(--color-text-primary);
             margin-bottom: 1.25rem;
             display: flex;
             align-items: center;
             gap: 0.55rem;
-            letter-spacing: -0.014em;
             padding-bottom: 0.9rem;
             border-bottom: 1px solid var(--color-border-light);
         }
+        .card-title i { color: var(--color-primary); }
 
-        .card-title i {
-            color: var(--color-primary);
-            font-size: 0.95rem;
-            opacity: 0.85;
-        }
-
-        /* ---------- Sensor Panel ---------- */
+        /* Sensors */
         .sensor-panel {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 1.25rem;
             margin-bottom: 1.75rem;
         }
-
         .sensor-card {
             position: relative;
             text-align: center;
@@ -271,15 +196,8 @@
             box-shadow: var(--shadow-card);
             overflow: hidden;
             transition: box-shadow var(--transition-base), transform var(--transition-base);
-            isolation: isolate;
         }
-
-        .sensor-card:hover {
-            box-shadow: var(--shadow-card-hover);
-            transform: translateY(-1px);
-        }
-
-        /* Decorative background blob */
+        .sensor-card:hover { transform: translateY(-1px); box-shadow: var(--shadow-card-hover); }
         .sensor-card::before {
             content: '';
             position: absolute;
@@ -291,22 +209,9 @@
             opacity: 0.05;
             pointer-events: none;
             z-index: -1;
-            transition: opacity var(--transition-base);
         }
-
-        .sensor-card:hover::before {
-            opacity: 0.09;
-        }
-
-        .sensor-card:first-child::before {
-            background: var(--color-temp);
-        }
-
-        .sensor-card:last-child::before {
-            background: var(--color-humidity);
-        }
-
-        /* Accent top bar on sensor cards */
+        .sensor-card:first-child::before { background: var(--color-temp); }
+        .sensor-card:last-child::before { background: var(--color-humidity); }
         .sensor-card::after {
             content: '';
             position: absolute;
@@ -317,15 +222,8 @@
             border-radius: 0 0 3px 3px;
             opacity: 0.7;
         }
-
-        .sensor-card:first-child::after {
-            background: linear-gradient(90deg, var(--color-temp), #fb923c);
-        }
-
-        .sensor-card:last-child::after {
-            background: linear-gradient(90deg, var(--color-humidity), #38bdf8);
-        }
-
+        .sensor-card:first-child::after { background: linear-gradient(90deg, var(--color-temp), #fb923c); }
+        .sensor-card:last-child::after { background: linear-gradient(90deg, var(--color-humidity), #38bdf8); }
         .sensor-label {
             font-size: 0.8rem;
             font-weight: 600;
@@ -338,54 +236,16 @@
             justify-content: center;
             gap: 0.45rem;
         }
+        .sensor-value { font-size: 3.75rem; font-weight: 800; line-height: 1; letter-spacing: -0.04em; }
+        .temp-value { color: var(--color-temp); }
+        .humi-value { color: var(--color-humidity); }
+        .unit { font-size: 0.75rem; font-weight: 600; color: var(--color-text-muted); text-transform: uppercase; margin-top: 0.15rem; }
 
-        .sensor-label i {
-            font-size: 0.9rem;
-        }
+        /* Two columns */
+        .two-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-bottom: 1.25rem; }
+        @media (max-width: 920px) { .two-columns { grid-template-columns: 1fr; gap: 1.25rem; } }
 
-        .sensor-value {
-            font-size: 3.75rem;
-            font-weight: 800;
-            line-height: 1;
-            letter-spacing: -0.04em;
-            margin-bottom: 0.25rem;
-            font-feature-settings: 'tnum';
-            font-variant-numeric: tabular-nums;
-        }
-
-        .temp-value {
-            color: var(--color-temp);
-        }
-
-        .humi-value {
-            color: var(--color-humidity);
-        }
-
-        .unit {
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: var(--color-text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-            margin-top: 0.15rem;
-        }
-
-        /* ---------- Two-Column Layout ---------- */
-        .two-columns {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1.25rem;
-            margin-bottom: 1.25rem;
-        }
-
-        @media (max-width: 920px) {
-            .two-columns {
-                grid-template-columns: 1fr;
-                gap: 1.25rem;
-            }
-        }
-
-        /* ---------- Snapshot Area ---------- */
+        /* Snapshot */
         .img-container {
             text-align: center;
             background: var(--color-bg);
@@ -393,33 +253,16 @@
             padding: 1.25rem;
             margin-bottom: 1.15rem;
             border: 1px solid var(--color-border-light);
-            position: relative;
             min-height: 120px;
             display: flex;
             align-items: center;
             justify-content: center;
             flex-direction: column;
         }
+        .img-container img { max-width: 100%; max-height: 360px; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); }
+        .btn-group { display: flex; gap: 0.65rem; justify-content: center; margin-top: 0.9rem; flex-wrap: wrap; }
 
-        .img-container img {
-            max-width: 100%;
-            max-height: 360px;
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-lg);
-            border: 1px solid rgba(0,0,0,0.06);
-            transition: opacity var(--transition-base);
-        }
-
-        .btn-group {
-            display: flex;
-            gap: 0.65rem;
-            justify-content: center;
-            margin-top: 0.9rem;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-
-        /* ---------- Buttons ---------- */
+        /* Buttons */
         button {
             font-family: 'Inter', sans-serif;
             font-weight: 600;
@@ -432,70 +275,18 @@
             align-items: center;
             gap: 0.45rem;
             transition: all var(--transition-fast);
-            letter-spacing: -0.01em;
-            white-space: nowrap;
-            user-select: none;
-            -webkit-user-select: none;
         }
+        button:active { transform: scale(0.975); }
+        .btn-primary { background: var(--color-primary); color: white; box-shadow: 0 1px 3px rgba(79,70,229,0.3); }
+        .btn-primary:hover { background: var(--color-primary-hover); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(79,70,229,0.35); }
+        .btn-success { background: var(--color-success); color: white; }
+        .btn-success:hover { background: #047857; transform: translateY(-1px); }
+        .btn-secondary { background: var(--color-text-secondary); color: white; }
+        .btn-secondary:hover { background: #374151; transform: translateY(-1px); }
+        .btn-info { background: var(--color-surface); color: var(--color-text-primary); border: 1px solid var(--color-border); }
+        .btn-info:hover { background: var(--color-bg); border-color: #c4c7ce; }
 
-        button:active {
-            transform: scale(0.975);
-        }
-
-        button i {
-            font-size: 0.9rem;
-        }
-
-        .btn-primary {
-            background: var(--color-primary);
-            color: var(--color-text-inverse);
-            box-shadow: 0 1px 3px rgba(79, 70, 229, 0.3), 0 1px 2px rgba(79, 70, 229, 0.2);
-        }
-
-        .btn-primary:hover {
-            background: var(--color-primary-hover);
-            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.35), 0 2px 4px rgba(79, 70, 229, 0.2);
-            transform: translateY(-1px);
-        }
-
-        .btn-success {
-            background: var(--color-success);
-            color: var(--color-text-inverse);
-            box-shadow: 0 1px 3px rgba(5, 150, 105, 0.3), 0 1px 2px rgba(5, 150, 105, 0.2);
-        }
-
-        .btn-success:hover {
-            background: #047857;
-            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.35), 0 2px 4px rgba(5, 150, 105, 0.2);
-            transform: translateY(-1px);
-        }
-
-        .btn-secondary {
-            background: var(--color-text-secondary);
-            color: var(--color-text-inverse);
-            box-shadow: 0 1px 3px rgba(75, 85, 99, 0.25);
-        }
-
-        .btn-secondary:hover {
-            background: #374151;
-            box-shadow: 0 4px 12px rgba(75, 85, 99, 0.3);
-            transform: translateY(-1px);
-        }
-
-        .btn-info {
-            background: var(--color-surface);
-            color: var(--color-text-primary);
-            border: 1px solid var(--color-border);
-            box-shadow: var(--shadow-xs);
-        }
-
-        .btn-info:hover {
-            background: var(--color-bg);
-            border-color: #c4c7ce;
-            box-shadow: var(--shadow-sm);
-        }
-
-        /* ---------- Status Badge ---------- */
+        /* Status badge */
         .status-badge {
             display: inline-flex;
             align-items: center;
@@ -507,11 +298,8 @@
             font-size: 0.775rem;
             font-weight: 600;
             margin-left: 0.5rem;
-            letter-spacing: -0.005em;
             border: 1px solid var(--color-border);
-            transition: all var(--transition-fast);
         }
-
         .status-badge::before {
             content: '';
             display: inline-block;
@@ -519,16 +307,12 @@
             height: 6px;
             border-radius: 50%;
             background: #22c55e;
-            box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.25);
+            box-shadow: 0 0 0 2px rgba(34,197,94,0.25);
             animation: pulse-dot 2.2s ease-in-out infinite;
         }
+        @keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:0.35;transform:scale(0.85);} }
 
-        @keyframes pulse-dot {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.35; transform: scale(0.85); }
-        }
-
-        /* ---------- Control Rows ---------- */
+        /* Controls */
         .control-row {
             display: flex;
             align-items: center;
@@ -541,36 +325,15 @@
             border: 1px solid var(--color-border-light);
         }
 
-        .control-row:first-of-type {
-            margin-top: 0;
-        }
-
-        /* ---------- Alert List ---------- */
+        /* Alert List */
         .alert-list {
             max-height: 340px;
             overflow-y: auto;
             scrollbar-width: thin;
-            scrollbar-color: #d1d5db transparent;
         }
-
-        .alert-list::-webkit-scrollbar {
-            width: 4px;
-        }
-
-        .alert-list::-webkit-scrollbar-track {
-            background: transparent;
-            margin: 4px 0;
-        }
-
-        .alert-list::-webkit-scrollbar-thumb {
-            background: #d1d5db;
-            border-radius: 10px;
-        }
-
-        .alert-list::-webkit-scrollbar-thumb:hover {
-            background: #9ca3af;
-        }
-
+        .alert-list::-webkit-scrollbar { width: 4px; }
+        .alert-list::-webkit-scrollbar-track { background: transparent; }
+        .alert-list::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
         .alert-item {
             background: var(--color-danger-subtle);
             border-left: 3px solid var(--color-danger);
@@ -578,161 +341,21 @@
             border-radius: 0 var(--radius-md) var(--radius-md) 0;
             margin-bottom: 0.6rem;
             font-size: 0.85rem;
-            line-height: 1.55;
-            color: var(--color-text-primary);
-            transition: background var(--transition-fast), box-shadow var(--transition-fast);
             animation: alertSlideIn 0.3s ease-out;
         }
+        @keyframes alertSlideIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+        .alert-camera { border-left-color: var(--color-warning); background: var(--color-warning-subtle); }
+        .alert-time { font-size: 0.72rem; color: var(--color-text-muted); margin-top: 0.35rem; }
+        .snapshot-thumb { max-width: 170px; border-radius: var(--radius-sm); margin-top: 0.55rem; box-shadow: var(--shadow-sm); }
 
-        @keyframes alertSlideIn {
-            from { opacity: 0; transform: translateX(-10px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-
-        .alert-item:hover {
-            background: #fee2e2;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
-        }
-
-        .alert-camera {
-            border-left-color: var(--color-warning);
-            background: var(--color-warning-subtle);
-        }
-
-        .alert-camera:hover {
-            background: #fef3c7;
-        }
-
-        .alert-time {
-            font-size: 0.72rem;
-            color: var(--color-text-muted);
-            margin-top: 0.35rem;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 0.3rem;
-        }
-
-        .snapshot-thumb {
-            max-width: 170px;
-            border-radius: var(--radius-sm);
-            margin-top: 0.55rem;
-            box-shadow: var(--shadow-sm);
-            border: 1px solid var(--color-border-light);
-            transition: transform var(--transition-fast);
-        }
-
-        .snapshot-thumb:hover {
-            transform: scale(1.03);
-        }
-
-        /* ---------- Chart Container ---------- */
-        .chart-container {
-            height: 340px;
-            width: 100%;
-        }
-
-        /* ---------- Empty State ---------- */
-        #noImgMsg {
-            color: var(--color-text-muted);
-            font-size: 0.85rem;
-            font-weight: 500;
-        }
-
-        /* ---------- Footer ---------- */
-        footer {
-            margin-top: 2.5rem;
-            text-align: center;
-            font-size: 0.75rem;
-            color: var(--color-text-muted);
-            font-weight: 500;
-            letter-spacing: -0.005em;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.35rem;
-            opacity: 0.7;
-        }
-
-        /* ---------- Responsive ---------- */
+        /* Chart */
+        .chart-container { height: 340px; width: 100%; }
+        footer { margin-top: 2.5rem; text-align: center; font-size: 0.75rem; color: var(--color-text-muted); display: flex; align-items: center; justify-content: center; gap: 0.35rem; }
         @media (max-width: 640px) {
-            body {
-                padding: 1rem 0.75rem 2rem;
-            }
-
-            .app-header {
-                padding: 0.9rem 1rem;
-                flex-direction: column;
-                align-items: flex-start;
-                border-radius: var(--radius-2xl);
-            }
-
-            .app-header h1 {
-                font-size: 1.2rem;
-            }
-
-            .app-header h1 i {
-                width: 2.2rem;
-                height: 2.2rem;
-                font-size: 1rem;
-            }
-
-            .sensor-panel {
-                grid-template-columns: 1fr;
-                gap: 1rem;
-            }
-
-            .sensor-value {
-                font-size: 2.75rem;
-            }
-
-            .sensor-card {
-                padding: 1.35rem 1.15rem;
-            }
-
-            .sensor-card::after {
-                left: 0.9rem;
-                right: 0.9rem;
-            }
-
-            .card {
-                padding: 1.15rem;
-            }
-
-            .chart-container {
-                height: 260px;
-            }
-
-            button {
-                font-size: 0.8rem;
-                padding: 0.5rem 1rem;
-            }
-
-            .control-row {
-                padding: 0.6rem 0.8rem;
-                gap: 0.4rem;
-            }
-        }
-
-        @media (max-width: 400px) {
-            .pet-selector {
-                padding: 0.3rem 0.3rem 0.3rem 0.8rem;
-                font-size: 0.78rem;
-                gap: 0.4rem;
-            }
-
-            .pet-selector select {
-                font-size: 0.78rem;
-                padding: 0.4rem 1.5rem 0.4rem 0.65rem;
-            }
-
-            .btn-group {
-                gap: 0.4rem;
-            }
-
-            .sensor-value {
-                font-size: 2.25rem;
-            }
+            body { padding: 1rem 0.75rem 2rem; }
+            .app-header { flex-direction: column; align-items: flex-start; }
+            .sensor-value { font-size: 2.75rem; }
+            .chart-container { height: 260px; }
         }
     </style>
 </head>
@@ -740,14 +363,21 @@
 <div class="container">
     <div class="app-header">
         <h1><i class="fas fa-paw"></i> Smart Pet Monitoring System</h1>
-        <div class="pet-selector">
-            <label><i class="fas fa-dog"></i> Select Pet:</label>
-            <select id="petSelect"></select>
+        <div style="display: flex; align-items: center;">
+            <div class="pet-selector">
+                <label><i class="fas fa-dog"></i> Select Pet:</label>
+                <select id="petSelect"></select>
+            </div>
+            <button id="editThresholdBtn" title="Edit alert thresholds for this pet">
+                <i class="fas fa-sliders-h"></i>
+            </button>
+            <button id="managePetsBtn" title="Manage pets (add/edit/delete)">
+                <i class="fas fa-users-cog"></i>
+            </button>
         </div>
         <div class="sub">MQTT Real‑time · Rule Engine · Remote Control · Multi‑Pet · Smart Snapshot</div>
     </div>
 
-    <!-- 传感器卡片：温度、湿度 -->
     <div class="sensor-panel">
         <div class="sensor-card">
             <div class="sensor-label"><i class="fas fa-temperature-high"></i> Current Temperature</div>
@@ -761,7 +391,6 @@
         </div>
     </div>
 
-    <!-- 两列布局：历史趋势 + 最新抓拍 -->
     <div class="two-columns">
         <div class="card">
             <div class="card-title"><i class="fas fa-chart-line"></i> History Trend (last 10 samples)</div>
@@ -780,8 +409,7 @@
         </div>
     </div>
 
-    <!-- 远程控制卡片 -->
-    <div class="card" style="margin-bottom: 1.8rem;">
+    <div class="card">
         <div class="card-title"><i class="fas fa-gamepad"></i> Remote Control</div>
         <div class="control-row">
             <button id="feedBtn" class="btn-primary"><i class="fas fa-bowl-food"></i> Feeder</button>
@@ -794,16 +422,11 @@
         </div>
     </div>
 
-    <!-- 警报列表卡片 -->
     <div class="card">
         <div class="card-title"><i class="fas fa-bell"></i> Latest Alerts</div>
-        <div id="alertList" class="alert-list">
-            <p>Loading...</p>
-        </div>
+        <div id="alertList" class="alert-list"><p>Loading...</p></div>
     </div>
-    <footer>
-        <i class="fas fa-exchange-alt"></i> Data synced via MQTT + WebSocket
-    </footer>
+    <footer><i class="fas fa-exchange-alt"></i> Data synced via MQTT + WebSocket</footer>
 </div>
 
 <script>
@@ -811,18 +434,14 @@
     const socket = io();
     let chart = null;
     let countdownInterval = null;
-    let currentPetId = null;   // 当前选中的宠物 ID
+    let currentPetId = null;
 
     // ---------- 辅助函数：将中文警报类型转换为英文 ----------
     function translateAlertType(chineseType) {
-        const map = {
-            "环境警报": "Environment Alert",
-            "摄像头告警": "Camera Alert"
-        };
+        const map = { "环境警报": "Environment Alert", "摄像头告警": "Camera Alert" };
         return map[chineseType] || chineseType;
     }
 
-    // ---------- 辅助函数：将中文警报消息转换为英文 ----------
     function translateAlertMessage(chineseMsg) {
         let msg = chineseMsg;
         msg = msg.replace(/高温警报：/g, "High temperature: ");
@@ -835,16 +454,13 @@
         return msg;
     }
 
-    // ---------- 添加警报条目至列表（显示英文） ----------
     function addAlert(time, type, message, imagePath) {
         const alertDiv = document.getElementById('alertList');
         const newAlert = document.createElement('div');
         const isCamera = (type === '摄像头告警');
         newAlert.className = 'alert-item' + (isCamera ? ' alert-camera' : '');
-        
         const displayType = translateAlertType(type);
         const displayMsg = translateAlertMessage(message);
-        
         let imgHtml = '';
         if (imagePath && imagePath !== '') {
             imgHtml = `<br><img class="snapshot-thumb" src="/static/${imagePath}?t=${Date.now()}" onerror="this.style.display='none'">`;
@@ -855,90 +471,20 @@
         if (alertDiv.children.length === 0 && alertDiv.innerHTML.trim() === "") alertDiv.innerHTML = '<p>No alerts</p>';
     }
 
-    // ---------- 图表初始化 ----------
+    // ---------- 图表 ----------
     function initChart(timestamps, temps, humis) {
         chart = echarts.init(document.getElementById('chart'));
         chart.setOption({
             color: ['#ea580c', '#0284c7'],
-            tooltip: {
-                trigger: 'axis',
-                backgroundColor: '#ffffff',
-                borderColor: '#e4e7ec',
-                borderWidth: 1,
-                textStyle: { color: '#111827', fontSize: 12, fontFamily: 'Inter, sans-serif' },
-                boxShadow: '0 8px 16px -4px rgba(0,0,0,0.08)',
-                axisPointer: { type: 'cross', crossStyle: { color: '#9ca3af' } }
-            },
-            legend: {
-                data: ['Temperature (°C)', 'Humidity (%)'],
-                bottom: 0,
-                left: 'center',
-                itemWidth: 28,
-                itemHeight: 3,
-                textStyle: { color: '#4b5563', fontSize: 11, fontFamily: 'Inter, sans-serif', fontWeight: 500 },
-                icon: 'roundRect'
-            },
+            tooltip: { trigger: 'axis', backgroundColor: '#ffffff', borderColor: '#e4e7ec', borderWidth: 1, textStyle: { color: '#111827', fontSize: 12, fontFamily: 'Inter, sans-serif' } },
+            legend: { data: ['Temperature (°C)', 'Humidity (%)'], bottom: 0, left: 'center', itemWidth: 28, itemHeight: 3, textStyle: { color: '#4b5563', fontSize: 11 } },
             grid: { containLabel: true, left: '3%', right: '5%', top: 12, bottom: 36 },
-            xAxis: {
-                type: 'category',
-                data: timestamps,
-                axisLine: { lineStyle: { color: '#e4e7ec' } },
-                axisTick: { show: false },
-                axisLabel: { rotate: 25, fontSize: 10, color: '#6b7280', fontFamily: 'Inter, sans-serif', fontWeight: 500 },
-                splitLine: { show: false }
-            },
-            yAxis: [
-                {
-                    type: 'value',
-                    name: '°C',
-                    nameTextStyle: { color: '#6b7280', fontSize: 10, fontFamily: 'Inter, sans-serif', fontWeight: 600 },
-                    axisLine: { show: false },
-                    axisTick: { show: false },
-                    axisLabel: { fontSize: 10, color: '#6b7280', fontFamily: 'Inter, sans-serif', fontWeight: 500 },
-                    splitLine: { lineStyle: { color: '#f0f1f4', type: 'dashed' } }
-                },
-                {
-                    type: 'value',
-                    name: '%',
-                    nameTextStyle: { color: '#6b7280', fontSize: 10, fontFamily: 'Inter, sans-serif', fontWeight: 600 },
-                    axisLine: { show: false },
-                    axisTick: { show: false },
-                    axisLabel: { fontSize: 10, color: '#6b7280', fontFamily: 'Inter, sans-serif', fontWeight: 500 },
-                    splitLine: { show: false }
-                }
-            ],
+            xAxis: { type: 'category', data: timestamps, axisLabel: { rotate: 25, fontSize: 10, color: '#6b7280' }, axisLine: { lineStyle: { color: '#e4e7ec' } }, axisTick: { show: false } },
+            yAxis: [{ type: 'value', name: '°C', nameTextStyle: { color: '#6b7280', fontSize: 10 }, axisLabel: { fontSize: 10 }, splitLine: { lineStyle: { color: '#f0f1f4', type: 'dashed' } } },
+                       { type: 'value', name: '%', nameTextStyle: { color: '#6b7280', fontSize: 10 }, axisLabel: { fontSize: 10 }, splitLine: { show: false } }],
             series: [
-                {
-                    name: 'Temperature (°C)',
-                    type: 'line',
-                    data: temps,
-                    smooth: true,
-                    symbol: 'circle',
-                    symbolSize: 6,
-                    lineStyle: { color: '#ea580c', width: 2.5, cap: 'round' },
-                    itemStyle: { color: '#ea580c', borderColor: '#ffffff', borderWidth: 2 },
-                    areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                        { offset: 0, color: 'rgba(234, 88, 12, 0.12)' },
-                        { offset: 1, color: 'rgba(234, 88, 12, 0.0)' }
-                    ])},
-                    emphasis: { focus: 'series' }
-                },
-                {
-                    name: 'Humidity (%)',
-                    type: 'line',
-                    yAxisIndex: 1,
-                    data: humis,
-                    smooth: true,
-                    symbol: 'circle',
-                    symbolSize: 6,
-                    lineStyle: { color: '#0284c7', width: 2.5, cap: 'round' },
-                    itemStyle: { color: '#0284c7', borderColor: '#ffffff', borderWidth: 2 },
-                    areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                        { offset: 0, color: 'rgba(2, 132, 199, 0.12)' },
-                        { offset: 1, color: 'rgba(2, 132, 199, 0.0)' }
-                    ])},
-                    emphasis: { focus: 'series' }
-                }
+                { name: 'Temperature (°C)', type: 'line', data: temps, smooth: true, symbol: 'circle', symbolSize: 6, lineStyle: { color: '#ea580c', width: 2.5 }, areaStyle: { color: new echarts.graphic.LinearGradient(0,0,0,1, [{offset:0, color:'rgba(234,88,12,0.12)'},{offset:1, color:'rgba(234,88,12,0)'}]) } },
+                { name: 'Humidity (%)', type: 'line', yAxisIndex: 1, data: humis, smooth: true, symbol: 'circle', symbolSize: 6, lineStyle: { color: '#0284c7', width: 2.5 }, areaStyle: { color: new echarts.graphic.LinearGradient(0,0,0,1, [{offset:0, color:'rgba(2,132,199,0.12)'},{offset:1, color:'rgba(2,132,199,0)'}]) } }
             ]
         });
     }
@@ -957,42 +503,41 @@
         chart.setOption(option);
     }
 
-    // ========== 加载宠物列表并初始化 ==========
-    fetch('/api/pets')
-        .then(res => res.json())
-        .then(pets => {
-            const select = document.getElementById('petSelect');
-            select.innerHTML = '';
-            if (pets.length === 0) {
-                select.innerHTML = '<option>No pets</option>';
-                return;
-            }
-            pets.forEach(pet => {
-                const option = document.createElement('option');
-                option.value = pet.id;
-                option.text = `${pet.name} (${pet.species || 'pet'})`;
-                select.appendChild(option);
-            });
-            currentPetId = pets[0].id;
-            select.value = currentPetId;
-            loadPetData(currentPetId);
-
-            select.addEventListener('change', (e) => {
-                currentPetId = parseInt(e.target.value);
+    // ========== 加载宠物列表（自动过滤默认宠物当存在自定义宠物时） ==========
+    function loadPetList() {
+        fetch('/api/pets')
+            .then(res => res.json())
+            .then(pets => {
+                const hasCustom = pets.some(p => p.type === 'custom');
+                const filtered = hasCustom ? pets.filter(p => p.type !== 'default') : pets;
+                const select = document.getElementById('petSelect');
+                select.innerHTML = '';
+                if (filtered.length === 0) {
+                    select.innerHTML = '<option>No pets</option>';
+                    return;
+                }
+                filtered.forEach(pet => {
+                    const option = document.createElement('option');
+                    option.value = pet.id;
+                    option.text = `${pet.name} (${pet.species})`;
+                    select.appendChild(option);
+                });
+                currentPetId = filtered[0].id;
+                select.value = currentPetId;
                 loadPetData(currentPetId);
+                select.addEventListener('change', (e) => {
+                    currentPetId = parseInt(e.target.value);
+                    loadPetData(currentPetId);
+                });
             });
-        });
+    }
 
     function loadPetData(petId) {
-        // 通过 REST API 加载历史数据和警报（快速显示）
         fetch(`/api/history/${petId}?limit=10`)
             .then(res => res.json())
             .then(data => {
                 if (chart) {
-                    chart.setOption({
-                        xAxis: { data: data.timestamps },
-                        series: [{ data: data.temps }, { data: data.humis }]
-                    });
+                    chart.setOption({ xAxis: { data: data.timestamps }, series: [{ data: data.temps }, { data: data.humis }] });
                 } else {
                     initChart(data.timestamps, data.temps, data.humis);
                 }
@@ -1009,39 +554,25 @@
             .then(alerts => {
                 const container = document.getElementById('alertList');
                 container.innerHTML = '';
-                if (alerts.length === 0) {
-                    container.innerHTML = '<p>No alerts</p>';
-                } else {
-                    alerts.forEach(alert => addAlert(alert.time, alert.type, alert.message, alert.image));
-                }
+                if (alerts.length === 0) container.innerHTML = '<p>No alerts</p>';
+                else alerts.forEach(alert => addAlert(alert.time, alert.type, alert.message, alert.image));
             });
-        // 通过 WebSocket 请求实时数据推送（用于后续实时更新）
         socket.emit('get_initial_data', { pet_id: petId });
     }
 
-    // ========== WebSocket 事件处理 ==========
+    // ========== WebSocket 事件 ==========
     socket.on('initial_data', (data) => {
         if (data.pet_id !== currentPetId) return;
-        // 如果已经有图表，则更新数据；否则初始化（但通常上面 REST 已经初始化，此处可选）
         if (data.temps.length > 0) {
-            if (chart) {
-                chart.setOption({
-                    xAxis: { data: data.timestamps },
-                    series: [{ data: data.temps }, { data: data.humis }]
-                });
-            } else {
-                initChart(data.timestamps, data.temps, data.humis);
-            }
+            if (chart) chart.setOption({ xAxis: { data: data.timestamps }, series: [{ data: data.temps }, { data: data.humis }] });
+            else initChart(data.timestamps, data.temps, data.humis);
             document.getElementById('tempVal').innerText = data.temps[data.temps.length-1];
             document.getElementById('humiVal').innerText = data.humis[data.humis.length-1];
         }
         const alertContainer = document.getElementById('alertList');
         alertContainer.innerHTML = '';
-        if (data.alerts.length === 0) {
-            alertContainer.innerHTML = '<p>No alerts</p>';
-        } else {
-            data.alerts.forEach(alert => addAlert(alert[0], alert[1], alert[2], alert[3] || ''));
-        }
+        if (data.alerts.length === 0) alertContainer.innerHTML = '<p>No alerts</p>';
+        else data.alerts.forEach(alert => addAlert(alert[0], alert[1], alert[2], alert[3] || ''));
     });
 
     socket.on('new_sensor', (data) => {
@@ -1063,14 +594,12 @@
             if (countdownInterval) {
                 clearInterval(countdownInterval);
                 document.getElementById('countdown').innerText = '✅ Image updated';
-                setTimeout(() => {
-                    document.getElementById('countdown').innerText = '';
-                }, 2000);
+                setTimeout(() => document.getElementById('countdown').innerText = '', 2000);
             }
         }
     });
 
-    // 手动拍照倒计时
+    // 手动拍照
     function startCountdown(seconds) {
         if (countdownInterval) clearInterval(countdownInterval);
         let remaining = seconds;
@@ -1078,15 +607,10 @@
         cdDiv.innerText = `Capturing... ${remaining}s`;
         countdownInterval = setInterval(() => {
             remaining--;
-            if (remaining >= 0) {
-                cdDiv.innerText = `Capturing... ${remaining}s`;
-            } else {
-                clearInterval(countdownInterval);
-                cdDiv.innerText = '';
-            }
+            if (remaining >= 0) cdDiv.innerText = `Capturing... ${remaining}s`;
+            else { clearInterval(countdownInterval); cdDiv.innerText = ''; }
         }, 1000);
     }
-
     document.getElementById('refreshCamBtn').onclick = () => {
         if (!currentPetId) return;
         socket.emit('camera_refresh', { pet_id: currentPetId });
@@ -1096,7 +620,7 @@
         document.getElementById('latestImg').style.display = 'none';
     };
 
-    // 远程控制按钮
+    // 远程控制
     document.getElementById('feedBtn').onclick = () => {
         if (!currentPetId) return;
         socket.emit('control', { pet_id: currentPetId, device: 'feeder', action: 'feed' });
@@ -1113,35 +637,54 @@
         document.getElementById('acStatus').innerText = 'Sending...';
     };
 
-    // 控制结果反馈
     socket.on('control_result', (data) => {
         if (data.pet_id !== currentPetId) return;
         let statusText = data.status;
         if (statusText === '指令已发送') statusText = 'Command sent';
         if (data.device === 'feeder') {
             document.getElementById('feederStatus').innerText = statusText;
-            setTimeout(() => { document.getElementById('feederStatus').innerText = 'Ready'; }, 3000);
+            setTimeout(() => document.getElementById('feederStatus').innerText = 'Ready', 3000);
         } else if (data.device === 'ac') {
             document.getElementById('acStatus').innerText = statusText;
-            setTimeout(() => { document.getElementById('acStatus').innerText = 'Ready'; }, 3000);
+            setTimeout(() => document.getElementById('acStatus').innerText = 'Ready', 3000);
         }
     });
 
-    // 执行器实际状态反馈
     socket.on('feeder_status', (data) => {
         if (data.pet_id !== currentPetId) return;
         document.getElementById('feederStatus').innerText = (data.status === 'success') ? 'Feed success' : 'Feed failed';
-        setTimeout(() => { document.getElementById('feederStatus').innerText = 'Ready'; }, 3000);
+        setTimeout(() => document.getElementById('feederStatus').innerText = 'Ready', 3000);
     });
     socket.on('ac_status', (data) => {
         if (data.pet_id !== currentPetId) return;
-        let txt = '';
-        if (data.status === 'on') txt = 'AC turned on';
-        else if (data.status === 'off') txt = 'AC turned off';
-        else txt = data.status;
+        let txt = (data.status === 'on') ? 'AC turned on' : (data.status === 'off') ? 'AC turned off' : data.status;
         document.getElementById('acStatus').innerText = txt;
-        setTimeout(() => { document.getElementById('acStatus').innerText = 'Ready'; }, 3000);
+        setTimeout(() => document.getElementById('acStatus').innerText = 'Ready', 3000);
     });
+
+    // 编辑阈值
+    document.getElementById('editThresholdBtn').onclick = async () => {
+        if (!currentPetId) return;
+        const newTemp = prompt("Enter new temperature threshold (°C):", "30.0");
+        const newHumi = prompt("Enter new humidity threshold (%):", "40.0");
+        if (newTemp !== null && newHumi !== null) {
+            const res = await fetch(`/api/pets/${currentPetId}/thresholds`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ temp_max: parseFloat(newTemp), humi_min: parseFloat(newHumi) })
+            });
+            if (res.ok) alert("Thresholds updated! New rules will apply immediately.");
+            else alert("Update failed.");
+        }
+    };
+
+    // 管理宠物按钮
+    document.getElementById('managePetsBtn').onclick = () => {
+        window.location.href = '/manage-pets';
+    };
+
+    // 初始化
+    loadPetList();
 </script>
 </body>
 </html>
