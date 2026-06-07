@@ -1,5 +1,5 @@
 import sqlite3
-from config import DB_FILE, DEFAULT_TEMP_MAX, DEFAULT_HUMI_MIN
+from config import DB_FILE, DEFAULT_TEMP_MAX, DEFAULT_HUMI_MIN, DEFAULT_CAMERA_SIMILARITY, DEFAULT_CAMERA_INACTIVE
 from datetime import datetime
 
 def init_db():
@@ -29,8 +29,10 @@ def init_db():
                   created_at TEXT,
                   type TEXT DEFAULT 'default',
                   temp_sensor_id INTEGER,
-                  camera_id INTEGER)''')
-    # 插入默认宠物（如果为空）
+                  camera_id INTEGER,
+                  camera_similarity REAL DEFAULT 0.95,
+                  camera_inactive INTEGER DEFAULT 5)''')
+    # 插入默认宠物（type='default'）
     c.execute("SELECT COUNT(*) FROM pets WHERE type='default'")
     if c.fetchone()[0] == 0:
         now = datetime.now().isoformat()
@@ -41,30 +43,25 @@ def init_db():
     conn.commit()
     conn.close()
 
-def get_pets():
+def get_pets_by_type(pet_type):
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
-    c.execute("SELECT id, name, species, age, photo, temp_max, humi_min, type FROM pets")
+    c.execute("SELECT id, name, species, age, photo, temp_max, humi_min, type FROM pets WHERE type=?", (pet_type,))
     rows = c.fetchall()
     conn.close()
     return [{"id": r[0], "name": r[1], "species": r[2], "age": r[3], "photo": r[4],
              "temp_max": r[5], "humi_min": r[6], "type": r[7]} for r in rows]
 
-def get_default_pets():
+def get_all_pets():
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
-    c.execute("SELECT id, name FROM pets WHERE type='default'")
+    c.execute("SELECT id, name, species, age, photo, temp_max, humi_min, type, temp_sensor_id, camera_id, camera_similarity, camera_inactive FROM pets")
     rows = c.fetchall()
     conn.close()
-    return [{"id": r[0], "name": r[1]} for r in rows]
-
-def get_custom_pets():
-    conn = sqlite3.connect(DB_FILE)
-    c = conn.cursor()
-    c.execute("SELECT id, name FROM pets WHERE type='custom'")
-    rows = c.fetchall()
-    conn.close()
-    return [{"id": r[0], "name": r[1]} for r in rows]
+    return [{"id": r[0], "name": r[1], "species": r[2], "age": r[3], "photo": r[4],
+             "temp_max": r[5], "humi_min": r[6], "type": r[7],
+             "temp_sensor_id": r[8], "camera_id": r[9],
+             "camera_similarity": r[10], "camera_inactive": r[11]} for r in rows]
 
 def get_pet_thresholds(pet_id):
     conn = sqlite3.connect(DB_FILE)
@@ -76,13 +73,46 @@ def get_pet_thresholds(pet_id):
         return {"temp_max": row[0], "humi_min": row[1]}
     return {"temp_max": DEFAULT_TEMP_MAX, "humi_min": DEFAULT_HUMI_MIN}
 
-def create_pet(name, species, temp_max, humi_min, temp_sensor_id=None, camera_id=None):
+def get_pet_camera_config(pet_id):
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    c.execute("SELECT camera_similarity, camera_inactive FROM pets WHERE id=?", (pet_id,))
+    row = c.fetchone()
+    conn.close()
+    if row:
+        return {"similarity": row[0], "inactive": row[1]}
+    return {"similarity": DEFAULT_CAMERA_SIMILARITY, "inactive": DEFAULT_CAMERA_INACTIVE}
+
+def update_pet_camera_config(pet_id, similarity=None, inactive=None):
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    if similarity is not None:
+        c.execute("UPDATE pets SET camera_similarity = ? WHERE id = ?", (similarity, pet_id))
+    if inactive is not None:
+        c.execute("UPDATE pets SET camera_inactive = ? WHERE id = ?", (inactive, pet_id))
+    conn.commit()
+    conn.close()
+
+def get_pet_type(pet_id):
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    c.execute("SELECT type FROM pets WHERE id=?", (pet_id,))
+    row = c.fetchone()
+    conn.close()
+    return row[0] if row else 'default'
+
+def create_pet(name, species, temp_max, humi_min, temp_sensor_id=None, camera_id=None,
+               pet_type='custom', camera_similarity=None, camera_inactive=None):
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
     now = datetime.now().isoformat()
-    c.execute("""INSERT INTO pets (name, species, temp_max, humi_min, created_at, type, temp_sensor_id, camera_id)
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
-              (name, species, temp_max, humi_min, now, "custom", temp_sensor_id, camera_id))
+    if camera_similarity is None:
+        camera_similarity = DEFAULT_CAMERA_SIMILARITY
+    if camera_inactive is None:
+        camera_inactive = DEFAULT_CAMERA_INACTIVE
+    c.execute("""INSERT INTO pets (name, species, temp_max, humi_min, created_at, type, temp_sensor_id, camera_id, camera_similarity, camera_inactive)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+              (name, species, temp_max, humi_min, now, pet_type, temp_sensor_id, camera_id, camera_similarity, camera_inactive))
     pet_id = c.lastrowid
     conn.commit()
     conn.close()

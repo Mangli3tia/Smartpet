@@ -3,82 +3,129 @@ import time
 import threading
 import json
 import paho.mqtt.client as mqtt
-from config import MQTT_BROKER, MQTT_PORT, TOPIC_TEMP, TOPIC_HUMI, TOPIC_CAMERA, TOPIC_CAMERA_REQUEST
-from utils.sensor_emulator import generate_sensor_data   # 导入温湿度模拟函数
-from utils.camera_emulator import generate_random_image, create_alert_message
-from database import get_pets
+from config import (MQTT_BROKER, MQTT_PORT,
+                    TOPIC_TEMP_DEFAULT, TOPIC_HUMI_DEFAULT, TOPIC_CAMERA_DEFAULT,
+                    TOPIC_TEMP_CUSTOM, TOPIC_HUMI_CUSTOM, TOPIC_CAMERA_CUSTOM,
+                    TOPIC_CAMERA_REQUEST, TOPIC_SYSTEM_PET_CREATED)
+from utils.sensor_emulator import generate_sensor_data as sim_sensor
+from utils.camera_emulator import generate_random_image as sim_camera, create_alert_message as sim_alert
+from utils.real_sensor import generate_sensor_data as real_sensor
+from utils.real_camera import capture_image as real_camera, create_alert_message as real_alert
+from database import get_all_pets
 
 client = mqtt.Client()
 client.connect(MQTT_BROKER, MQTT_PORT, 60)
 client.loop_start()
 
+active_pet_threads = set()
+thread_lock = threading.Lock()
+
 def on_connect(client, userdata, flags, rc):
-    print("发布端已连接 MQTT Broker")
-    # 订阅手动拍照请求（兼容原有主题格式）
+    print("Publisher connected")
     client.subscribe("pet/+/camera/request")
+    client.subscribe(TOPIC_SYSTEM_PET_CREATED)
 
 def on_message(client, userdata, msg):
-    topic_parts = msg.topic.split('/')
-    if len(topic_parts) >= 3 and topic_parts[2] == 'camera' and topic_parts[3] == 'request':
-        pet_id = topic_parts[1]
-        print(f"收到手动拍照请求，pet_id={pet_id}")
-        img_name = generate_random_image("manual")
-        alert_msg = create_alert_message("manual_snapshot", img_name)
-        # 获取宠物类型，决定发布主题
-        pets = get_pets()
+    topic = msg.topic
+    if topic == TOPIC_SYSTEM_PET_CREATED:
+        pet_id = int(msg.payload.decode())
+        print(f"Received new pet creation: {pet_id}")
+        pets = get_all_pets()
+        pet = next((p for p in pets if p['id'] == pet_id), None)
+        if pet and pet['id'] not in active_pet_threads:
+            with thread_lock:
+                if pet['id'] not in active_pet_threads:
+                    print(f"Starting thread for new pet {pet_id}")
+                    t = threading.Thread(target=publish_for_pet, args=(pet,), daemon=True)
+                    t.start()
+                    active_pet_threads.add(pet['id'])
+        return
+    parts = topic.split('/')
+    if len(parts) >= 3 and parts[2] == 'camera' and parts[3] == 'request':
+        pet_id = parts[1]
+        print(f"Manual camera request for {pet_id}")
+        pets = get_all_pets()
         pet = next((p for p in pets if p['id'] == int(pet_id)), None)
-        if pet and pet['type'] == 'default':
-            camera_topic = TOPIC_CAMERA   # 默认宠物使用旧主题（不带 pet_id）
+        if not pet: return
+        if pet['type'] == 'default':
+            img = sim_camera("manual")
+            alert = sim_alert("manual_snapshot", img)
+            cam_topic = TOPIC_CAMERA_DEFAULT
         else:
-            camera_topic = f"custom/{pet_id}/camera/alert"
-        client.publish(camera_topic, json.dumps(alert_msg), qos=1)
-        print(f"已为宠物 {pet_id} 拍照并发布")
+            img = real_camera(device_id=pet.get('camera_id', 2))
+            if img is None:
+                print("Camera capture failed")
+                return
+            alert = real_alert("manual_snapshot", img)
+            cam_topic = TOPIC_CAMERA_CUSTOM.format(pet_id=pet_id)
+        client.publish(cam_topic, json.dumps(alert), qos=1)
+        print(f"Published manual snapshot for {pet_id}")
 
 client.on_connect = on_connect
 client.on_message = on_message
 
-def publish_sensor_for_pet(pet):
-    """为单个宠物持续发布温湿度数据（使用 sensor_emulator）"""
-    pet_id = pet['id']
-    is_default = (pet['type'] == 'default')
-    while True:
-        temp, humi = generate_sensor_data()   # 调用外部模拟函数
-        if is_default:
-            temp_topic = TOPIC_TEMP
-            humi_topic = TOPIC_HUMI
-        else:
-            temp_topic = f"custom/{pet_id}/sensor/temp"
-            humi_topic = f"custom/{pet_id}/sensor/humi"
-        client.publish(temp_topic, json.dumps({"value": temp}))
-        client.publish(humi_topic, json.dumps({"value": humi}))
-        print(f"[{'默认' if is_default else '自定义'}宠物 {pet_id}] 温度:{temp}°C 湿度:{humi}%")
-        time.sleep(2)
-
-def publish_camera_for_pet(pet):
-    """为单个宠物模拟自动拍照（每10秒30%概率）"""
-    pet_id = pet['id']
-    is_default = (pet['type'] == 'default')
-    while True:
-        time.sleep(10)
-        if random.random() < 0.3:
-            img_name = generate_random_image("pet_moved")
-            alert_msg = create_alert_message("pet_moved", img_name)
-            if is_default:
-                camera_topic = TOPIC_CAMERA
+def publish_for_pet(pet):
+    pid = pet['id']
+    ptype = pet['type']
+    last_photo = 0
+    if ptype == 'default':
+        while True:
+            t, h = sim_sensor()
+            client.publish(TOPIC_TEMP_DEFAULT, json.dumps({"value": t}))
+            client.publish(TOPIC_HUMI_DEFAULT, json.dumps({"value": h}))
+            print(f"[Demo {pid}] Simulated {t}°C {h}%")
+            now = time.time()
+            if now - last_photo >= 10:
+                img = sim_camera("auto")
+                if img:
+                    alert = sim_alert("auto_snapshot", img)
+                    client.publish(TOPIC_CAMERA_DEFAULT, json.dumps(alert), qos=1)
+                    print(f"[Demo {pid}] Auto snapshot")
+                last_photo = now
+            time.sleep(2)
+    else:
+        temp_id = pet.get('temp_sensor_id', 1)
+        cam_id = pet.get('camera_id', 2)
+        print(f"[Own {pid}] Real hardware: sensor {temp_id}, camera {cam_id}")
+        while True:
+            t, h = real_sensor(device_id=temp_id)
+            if t is not None and h is not None:
+                client.publish(TOPIC_TEMP_CUSTOM.format(pet_id=pid), json.dumps({"value": t}))
+                client.publish(TOPIC_HUMI_CUSTOM.format(pet_id=pid), json.dumps({"value": h}))
+                print(f"[Own {pid}] Real data: {t}°C {h}%")
             else:
-                camera_topic = f"custom/{pet_id}/camera/alert"
-            client.publish(camera_topic, json.dumps(alert_msg), qos=1)
-            print(f"[{'默认' if is_default else '自定义'}宠物 {pet_id}] 自动拍照并发布")
+                print(f"[Own {pid}] Sensor read failed")
+            now = time.time()
+            if now - last_photo >= 60:
+                img = real_camera(device_id=cam_id)
+                if img:
+                    alert = real_alert("auto_snapshot", img)
+                    client.publish(TOPIC_CAMERA_CUSTOM.format(pet_id=pid), json.dumps(alert), qos=1)
+                    print(f"[Own {pid}] Auto snapshot")
+                last_photo = now
+            time.sleep(2)
 
 if __name__ == "__main__":
-    pets = get_pets()
-    if not pets:
-        print("未找到宠物，请先运行 web_server.py 初始化数据库")
-        exit(1)
+    pets = get_all_pets()
     for pet in pets:
-        threading.Thread(target=publish_sensor_for_pet, args=(pet,), daemon=True).start()
-        threading.Thread(target=publish_camera_for_pet, args=(pet,), daemon=True).start()
-    print(f"已为 {len(pets)} 个宠物启动发布线程")
+        with thread_lock:
+            if pet['id'] not in active_pet_threads:
+                threading.Thread(target=publish_for_pet, args=(pet,), daemon=True).start()
+                active_pet_threads.add(pet['id'])
+    # 定期扫描新宠物
+    def scanner():
+        while True:
+            time.sleep(10)
+            current = get_all_pets()
+            with thread_lock:
+                for pet in current:
+                    if pet['id'] not in active_pet_threads:
+                        print(f"Scanner found new pet {pet['id']}, starting thread")
+                        t = threading.Thread(target=publish_for_pet, args=(pet,), daemon=True)
+                        t.start()
+                        active_pet_threads.add(pet['id'])
+    threading.Thread(target=scanner, daemon=True).start()
+    print(f"Started {len(active_pet_threads)} threads")
     try:
         while True:
             time.sleep(1)
