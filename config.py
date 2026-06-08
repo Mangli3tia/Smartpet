@@ -5,10 +5,10 @@ DB_FILE = os.path.join(BASE_DIR, "pet_monitor.db")
 MQTT_BROKER = "broker.emqx.io"
 MQTT_PORT = 1883
 
-# 默认宠物（Demo）主题（不带 pet_id）
-TOPIC_TEMP_DEFAULT = "pet/sensor/temp"
-TOPIC_HUMI_DEFAULT = "pet/sensor/humi"
-TOPIC_CAMERA_DEFAULT = "pet/camera/alert"
+# 默认宠物（Demo）主题（带 pet_id 占位符，每个 Demo 宠物独立数据流）
+TOPIC_TEMP_DEFAULT = "demo/{pet_id}/sensor/temp"
+TOPIC_HUMI_DEFAULT = "demo/{pet_id}/sensor/humi"
+TOPIC_CAMERA_DEFAULT = "demo/{pet_id}/camera/alert"
 
 # 自定义宠物（Own Pet）主题（带 pet_id 占位符）
 TOPIC_TEMP_CUSTOM = "custom/{pet_id}/sensor/temp"

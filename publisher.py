@@ -9,9 +9,21 @@ from config import (MQTT_BROKER, MQTT_PORT,
                     TOPIC_CAMERA_REQUEST, TOPIC_SYSTEM_PET_CREATED)
 from utils.sensor_emulator import generate_sensor_data as sim_sensor
 from utils.camera_emulator import generate_random_image as sim_camera, create_alert_message as sim_alert
-from utils.real_sensor import generate_sensor_data as real_sensor
-from utils.real_camera import capture_image as real_camera, create_alert_message as real_alert
 from database import get_all_pets
+
+# 真实硬件模块是可选的，仅在树莓派等设备上可用
+try:
+    from utils.real_sensor import generate_sensor_data as real_sensor
+except ImportError:
+    real_sensor = None
+    print("⚠ real_sensor not available (requires board + adafruit_dht)")
+
+try:
+    from utils.real_camera import capture_image as real_camera, create_alert_message as real_alert
+except ImportError:
+    real_camera = None
+    real_alert = None
+    print("⚠ real_camera not available (requires cv2)")
 
 client = mqtt.Client()
 client.connect(MQTT_BROKER, MQTT_PORT, 60)
@@ -50,8 +62,11 @@ def on_message(client, userdata, msg):
         if pet['type'] == 'default':
             img = sim_camera("manual")
             alert = sim_alert("manual_snapshot", img)
-            cam_topic = TOPIC_CAMERA_DEFAULT
+            cam_topic = TOPIC_CAMERA_DEFAULT.format(pet_id=pet_id)
         else:
+            if real_camera is None:
+                print(f"Manual camera request for pet {pet_id} skipped — no hardware")
+                return
             img = real_camera(device_id=pet.get('camera_id', 2))
             if img is None:
                 print("Camera capture failed")
@@ -71,19 +86,23 @@ def publish_for_pet(pet):
     if ptype == 'default':
         while True:
             t, h = sim_sensor()
-            client.publish(TOPIC_TEMP_DEFAULT, json.dumps({"value": t}))
-            client.publish(TOPIC_HUMI_DEFAULT, json.dumps({"value": h}))
+            client.publish(TOPIC_TEMP_DEFAULT.format(pet_id=pid), json.dumps({"value": t}))
+            client.publish(TOPIC_HUMI_DEFAULT.format(pet_id=pid), json.dumps({"value": h}))
             print(f"[Demo {pid}] Simulated {t}°C {h}%")
             now = time.time()
             if now - last_photo >= 10:
                 img = sim_camera("auto")
                 if img:
                     alert = sim_alert("auto_snapshot", img)
-                    client.publish(TOPIC_CAMERA_DEFAULT, json.dumps(alert), qos=1)
+                    client.publish(TOPIC_CAMERA_DEFAULT.format(pet_id=pid), json.dumps(alert), qos=1)
                     print(f"[Demo {pid}] Auto snapshot")
                 last_photo = now
             time.sleep(2)
     else:
+        if real_sensor is None or real_camera is None:
+            # 硬件模块不可用，Own Pet 模式不启动（不使用模拟数据）
+            print(f"[Own {pid}] Hardware not available — pet requires real sensors. Skipping.")
+            return
         temp_id = pet.get('temp_sensor_id', 1)
         cam_id = pet.get('camera_id', 2)
         print(f"[Own {pid}] Real hardware: sensor {temp_id}, camera {cam_id}")

@@ -7,7 +7,7 @@ os.makedirs("static", exist_ok=True)
 
 def generate_random_image(event_type):
     timestamp = int(time.time())
-    img_name = f"snapshot_{timestamp}.jpg"
+    img_name = f"demo_{timestamp}.jpg"
     img_path = os.path.join("static", img_name)
     color = (random.randint(0,255), random.randint(0,255), random.randint(0,255))
     img = Image.new('RGB', (320,240), color=color)

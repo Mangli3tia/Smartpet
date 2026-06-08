@@ -16,8 +16,8 @@ from config import (MQTT_BROKER, MQTT_PORT,
 from database import (init_db, get_pets_by_type, get_all_pets,
                       get_recent_sensor_data, get_recent_alerts,
                       get_last_sensor_id, get_last_alert_id,
-                      get_pet_thresholds, create_pet, update_pet_thresholds,
-                      get_devices, get_pet_camera_config, update_pet_camera_config)
+                      get_pet_thresholds, create_pet, update_pet, update_pet_thresholds,
+                      delete_pet, get_devices, get_pet_camera_config, update_pet_camera_config)
 
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*")
@@ -63,6 +63,8 @@ def migrate_database():
         c.execute("ALTER TABLE pets ADD COLUMN camera_similarity REAL DEFAULT 0.95")
     if 'camera_inactive' not in columns:
         c.execute("ALTER TABLE pets ADD COLUMN camera_inactive INTEGER DEFAULT 5")
+    if 'camera_alert_probability' not in columns:
+        c.execute("ALTER TABLE pets ADD COLUMN camera_alert_probability REAL DEFAULT 0.3")
     conn.commit()
     conn.close()
 
@@ -100,6 +102,7 @@ def api_create_pet():
     data = request.json
     name = data.get('name')
     species = data.get('species', 'Custom')
+    pet_type = data.get('pet_type', 'custom')
     temp_sensor_id = data.get('temp_sensor_id')
     camera_id = data.get('camera_id')
     temp_max = data.get('temp_max', 30.0)
@@ -109,19 +112,40 @@ def api_create_pet():
     if not name:
         return jsonify({"error": "Pet name required"}), 400
     pet_id = create_pet(name, species, temp_max, humi_min, temp_sensor_id, camera_id,
-                        pet_type='custom', camera_similarity=camera_similarity, camera_inactive=camera_inactive)
+                        pet_type=pet_type, camera_similarity=camera_similarity, camera_inactive=camera_inactive)
     # 发送 MQTT 通知，让 publisher 立即刷新
     command_client.publish(TOPIC_SYSTEM_PET_CREATED, str(pet_id))
     return jsonify({"pet_id": pet_id, "message": "Pet created"}), 201
+
+@app.route('/api/pets/<int:pet_id>', methods=['PUT'])
+def api_update_pet(pet_id):
+    data = request.json
+    name = data.get('name')
+    species = data.get('species')
+    temp_max = data.get('temp_max')
+    humi_min = data.get('humi_min')
+    update_pet(pet_id, name=name, species=species, temp_max=temp_max, humi_min=humi_min)
+    return jsonify({"message": "Pet updated"})
+
+@app.route('/api/pets/<int:pet_id>', methods=['DELETE'])
+def api_delete_pet(pet_id):
+    delete_pet(pet_id)
+    return jsonify({"message": "Pet deleted"})
+
+@app.route('/api/pets/<int:pet_id>/thresholds', methods=['GET'])
+def api_get_thresholds(pet_id):
+    thresholds = get_pet_thresholds(pet_id)
+    return jsonify(thresholds)
 
 @app.route('/api/pets/<int:pet_id>/thresholds', methods=['PUT'])
 def api_update_thresholds(pet_id):
     data = request.json
     temp_max = data.get('temp_max')
     humi_min = data.get('humi_min')
-    if temp_max is None and humi_min is None:
+    camera_alert_probability = data.get('camera_alert_probability')
+    if temp_max is None and humi_min is None and camera_alert_probability is None:
         return jsonify({"error": "No threshold provided"}), 400
-    update_pet_thresholds(pet_id, temp_max, humi_min)
+    update_pet_thresholds(pet_id, temp_max, humi_min, camera_alert_probability)
     return jsonify({"message": "Thresholds updated"})
 
 @app.route('/api/pets/<int:pet_id>/camera_config', methods=['PUT'])
@@ -159,7 +183,7 @@ def handle_initial_data(data):
     pet_id = data.get('pet_id')
     if pet_id is None:
         return
-    sensor_data = get_recent_sensor_data(pet_id, 100)
+    sensor_data = get_recent_sensor_data(pet_id, 10)
     alerts = get_recent_alerts(pet_id, 20)
     timestamps = [row[0] for row in sensor_data]
     temps = [row[1] for row in sensor_data]

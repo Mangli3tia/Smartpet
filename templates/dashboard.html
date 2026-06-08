@@ -334,18 +334,78 @@
         }
         @keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:0.35;transform:scale(0.85);} }
 
-        /* Controls */
-        .control-row {
+        /* Controls — tech style */
+        .ctrl-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        @media (max-width: 640px) { .ctrl-grid { grid-template-columns: 1fr; } }
+        .ctrl-unit {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 1rem;
+            padding: 1.15rem 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.65rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .ctrl-unit:hover { border-color: #cbd5e1; box-shadow: 0 2px 12px rgba(0,0,0,0.04); }
+        .ctrl-label {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #334155;
             display: flex;
             align-items: center;
-            flex-wrap: wrap;
-            gap: 0.55rem;
-            margin: 0.85rem 0;
-            padding: 0.7rem 1rem;
-            background: var(--color-bg);
-            border-radius: var(--radius-lg);
-            border: 1px solid var(--color-border-light);
+            gap: 0.4rem;
         }
+        .ctrl-label i { color: #6366f1; font-size: 0.85rem; }
+        .ctrl-btns {
+            display: flex;
+            gap: 0.65rem;
+        }
+        .btn-ctrl {
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            font-size: 0.8rem;
+            padding: 0.55rem 1.2rem;
+            border-radius: 0.6rem;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: all 0.15s;
+            color: white;
+        }
+        .btn-ctrl:active { transform: scale(0.96); }
+        .btn-feed { background: #6366f1; box-shadow: 0 2px 8px rgba(99,102,241,0.3); }
+        .btn-feed:hover { background: #4f46e5; box-shadow: 0 4px 14px rgba(99,102,241,0.4); }
+        .btn-ac-on { background: #10b981; box-shadow: 0 2px 8px rgba(16,185,129,0.3); }
+        .btn-ac-on:hover { background: #059669; box-shadow: 0 4px 14px rgba(16,185,129,0.4); }
+        .btn-ac-off { background: #fff; color: #ef4444; border: 1.5px solid #fecaca; }
+        .btn-ac-off:hover { background: #fef2f2; }
+        .ctrl-status {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+        .ctrl-dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            transition: background 0.2s, box-shadow 0.2s;
+        }
+        .ctrl-dot.idle { background: #22c55e; box-shadow: 0 0 6px rgba(34,197,94,0.5); }
+        .ctrl-dot.busy { background: #eab308; box-shadow: 0 0 8px rgba(234,179,8,0.6); animation: dot-blink 0.6s ease-in-out infinite; }
+        @keyframes dot-blink { 0%,100%{opacity:1;} 50%{opacity:0.2;} }
 
         /* Alert List */
         .alert-list {
@@ -369,6 +429,28 @@
         .alert-camera { border-left-color: var(--color-warning); background: var(--color-warning-subtle); }
         .alert-time { font-size: 0.72rem; color: var(--color-text-muted); margin-top: 0.35rem; }
         .snapshot-thumb { max-width: 170px; border-radius: var(--radius-sm); margin-top: 0.55rem; box-shadow: var(--shadow-sm); }
+
+        /* Toast notifications */
+        .toast-container {
+            position: fixed; top: 1.25rem; right: 1.25rem;
+            z-index: 9999; display: flex; flex-direction: column; gap: 0.5rem;
+            pointer-events: none;
+        }
+        .toast {
+            background: #1e1b4b; color: white;
+            padding: 0.8rem 1.2rem; border-radius: 0.75rem;
+            font-family: 'Inter', sans-serif; font-size: 0.84rem; font-weight: 500;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            display: flex; align-items: center; gap: 0.55rem;
+            animation: toastIn 0.25s ease-out, toastOut 0.25s ease-in forwards;
+            animation-delay: 0s, 2.5s;
+            pointer-events: auto; max-width: 380px;
+        }
+        .toast.success { border-left: 3px solid #22c55e; }
+        .toast.error { border-left: 3px solid #ef4444; }
+        .toast.info { border-left: 3px solid #6366f1; }
+        @keyframes toastIn { from { opacity: 0; transform: translateX(60px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes toastOut { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(60px); } }
 
         /* Chart */
         .chart-container { height: 340px; width: 100%; }
@@ -424,15 +506,148 @@
             gap: 0.5rem;
             margin-bottom: 0.5rem;
         }
-        .modal-buttons {
+        /* Settings Panel (modern modal) */
+        .settings-panel {
+            max-width: 520px !important;
+            padding: 0 !important;
+            overflow: hidden;
+            border-radius: 1.25rem !important;
+        }
+        .settings-header {
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%);
+            color: white;
+            padding: 1.75rem 2rem;
+            text-align: center;
+        }
+        .settings-icon {
+            width: 3rem;
+            height: 3rem;
+            background: rgba(255,255,255,0.15);
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            margin-bottom: 0.75rem;
+            -webkit-backdrop-filter: blur(4px);
+            backdrop-filter: blur(4px);
+        }
+        .settings-header h3 {
+            margin: 0 0 0.35rem;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: white;
+        }
+        .settings-subtitle {
+            font-size: 0.78rem;
+            color: rgba(255,255,255,0.7);
+            margin: 0;
+        }
+        .settings-body {
+            padding: 1.5rem 2rem;
+            max-height: 50vh;
+            overflow-y: auto;
+        }
+        .setting-group {
+            margin-bottom: 1.35rem;
+        }
+        .setting-group:last-child {
+            margin-bottom: 0;
+        }
+        .setting-divider {
+            border-top: 1px solid #e5e7eb;
+            margin: 1.25rem 0;
+        }
+        .setting-label-row {
             display: flex;
-            justify-content: flex-end;
-            gap: 1rem;
-            margin-top: 1.5rem;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            font-size: 0.88rem;
+            color: #1f2937;
+            flex-wrap: wrap;
+        }
+        .setting-icon-small {
+            width: 1.75rem;
+            height: 1.75rem;
+            border-radius: 0.45rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            flex-shrink: 0;
+        }
+        .setting-group:nth-child(1) .setting-icon-small { background: #fef2f2; color: #ea580c; }
+        .setting-group:nth-child(2) .setting-icon-small { background: #f0f9ff; color: #0284c7; }
+        .setting-group:nth-child(3) .setting-icon-small, #cameraProbGroup .setting-icon-small { background: #f5f3ff; color: #7c3aed; }
+        .setting-badge {
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            padding: 0.15rem 0.55rem;
+            border-radius: 1rem;
+            margin-left: auto;
+        }
+        .demo-badge {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        .setting-input-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.45rem;
+        }
+        .setting-input-row input[type="number"] {
+            width: 100px;
+            padding: 0.5rem 0.75rem;
+            border: 1.5px solid #d1d5db;
+            border-radius: 0.55rem;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 600;
+            text-align: center;
+            transition: border-color 0.15s, box-shadow 0.15s;
+            background: #f9fafb;
+        }
+        .setting-input-row input[type="number"]:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
+            background: white;
+        }
+        .setting-input-row input[type="range"] {
+            flex: 1;
+            accent-color: #6366f1;
+            height: 6px;
+            min-width: 80px;
+        }
+        .setting-unit {
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #6366f1;
+            min-width: 2.5rem;
+            text-align: right;
+        }
+        .setting-hint {
+            font-size: 0.75rem;
+            color: #6b7280;
+            line-height: 1.5;
+            margin: 0;
+            padding-left: 0.6rem;
+            border-left: 2px solid #e5e7eb;
+        }
+        .settings-panel .modal-buttons {
+            padding: 1rem 2rem 1.5rem;
+            margin-top: 0;
+            border-top: 1px solid #f0f1f4;
         }
     </style>
 </head>
 <body>
+<div class="toast-container" id="toastContainer"></div>
 <div class="container">
     <div class="app-header">
         <h1><i class="fas fa-paw"></i> Smart Pet Monitoring System</h1>
@@ -454,7 +669,7 @@
             <button id="managePetsBtn" title="Manage pets (add/edit/delete)">
                 <i class="fas fa-users-cog"></i>
             </button>
-            <button id="createPetBtn" title="Create new pet (Own Pet Mode only)" style="display: none;">
+            <button id="createPetBtn" title="Create a new pet">
                 <i class="fas fa-plus-circle"></i>
             </button>
         </div>
@@ -493,14 +708,26 @@
 
     <div class="card">
         <div class="card-title"><i class="fas fa-gamepad"></i> Remote Control</div>
-        <div class="control-row">
-            <button id="feedBtn" class="btn-primary"><i class="fas fa-bowl-food"></i> Feeder</button>
-            <span id="feederStatus" class="status-badge">Ready</span>
-        </div>
-        <div class="control-row">
-            <button id="acOnBtn" class="btn-success"><i class="fas fa-snowflake"></i> AC On</button>
-            <button id="acOffBtn" class="btn-secondary"><i class="fas fa-fire"></i> AC Off</button>
-            <span id="acStatus" class="status-badge">Ready</span>
+        <div class="ctrl-grid">
+            <div class="ctrl-unit">
+                <span class="ctrl-label"><i class="fas fa-bowl-food"></i> Pet Feeder</span>
+                <button id="feedBtn" class="btn-ctrl btn-feed"><i class="fas fa-play"></i> Dispense Food</button>
+                <div class="ctrl-status">
+                    <span class="ctrl-dot idle" id="feedDot"></span>
+                    <span id="feederStatus">standby</span>
+                </div>
+            </div>
+            <div class="ctrl-unit">
+                <span class="ctrl-label"><i class="fas fa-temperature-arrow-up"></i> Climate Control</span>
+                <div class="ctrl-btns">
+                    <button id="acOnBtn" class="btn-ctrl btn-ac-on"><i class="fas fa-snowflake"></i> Cooling</button>
+                    <button id="acOffBtn" class="btn-ctrl btn-ac-off"><i class="fas fa-power-off"></i> Off</button>
+                </div>
+                <div class="ctrl-status">
+                    <span class="ctrl-dot idle" id="acDot"></span>
+                    <span id="acStatus">standby</span>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -513,48 +740,192 @@
 
 <!-- 新建宠物模态框 -->
 <div id="newPetModal" class="modal">
-    <div class="modal-content">
-        <h3>Create New Pet</h3>
-        <label>Name</label>
-        <input type="text" id="newPetName" placeholder="e.g., Whiskers">
-        <label>Species</label>
-        <select id="newPetSpecies">
-            <option value="Cat">Cat</option>
-            <option value="Dog">Dog</option>
-            <option value="Other">Other</option>
-        </select>
-        <label>Temperature/Humidity Sensor</label>
-        <div id="newSensorList"></div>
-        <label>Camera</label>
-        <div id="newCameraList"></div>
-        <label>Temp threshold (°C)</label>
-        <input type="number" step="0.1" id="newTempMax" value="30.0">
-        <label>Humidity threshold (%)</label>
-        <input type="number" step="0.1" id="newHumiMin" value="40.0">
-        <div class="modal-buttons">
-            <button id="cancelCreateBtn" class="btn-secondary">Cancel</button>
-            <button id="confirmCreateBtn" class="btn-primary">Create</button>
+    <div class="modal-content settings-panel">
+        <div class="settings-header">
+            <div class="settings-icon"><i class="fas fa-plus-circle"></i></div>
+            <h3 id="newPetModalTitle">Create New Pet</h3>
+            <p class="settings-subtitle" id="newPetModalSubtitle">Add a pet to monitor</p>
+        </div>
+        <div class="settings-body">
+            <div class="setting-group">
+                <div class="setting-label-row">
+                    <span class="setting-icon-small" style="background:#f5f3ff;color:#7c3aed;"><i class="fas fa-tag"></i></span>
+                    <label>Name</label>
+                </div>
+                <input type="text" id="newPetName" placeholder="e.g., Whiskers" style="width:100%;padding:0.55rem 0.75rem;border:1.5px solid #d1d5db;border-radius:0.55rem;font-family:'Inter',sans-serif;font-size:0.9rem;background:#f9fafb;">
+            </div>
+            <div class="setting-group">
+                <div class="setting-label-row">
+                    <span class="setting-icon-small" style="background:#f0f9ff;color:#0284c7;"><i class="fas fa-dog"></i></span>
+                    <label>Species</label>
+                </div>
+                <select id="newPetSpecies" style="width:100%;padding:0.55rem 0.75rem;border:1.5px solid #d1d5db;border-radius:0.55rem;font-family:'Inter',sans-serif;font-size:0.9rem;background:#f9fafb;">
+                    <option value="Cat">Cat</option>
+                    <option value="Dog">Dog</option>
+                    <option value="Other">Other</option>
+                </select>
+                <p class="setting-hint">Choose a species for your pet. This is shown in the dashboard selector.</p>
+            </div>
+            <!-- 设备选择（仅 Own Pet 模式） -->
+            <div id="deviceSelectionGroup">
+                <div class="setting-divider"></div>
+                <div class="setting-group">
+                    <div class="setting-label-row">
+                        <span class="setting-icon-small" style="background:#fef2f2;color:#ea580c;"><i class="fas fa-microchip"></i></span>
+                        <label>Temperature / Humidity Sensor</label>
+                        <span class="setting-badge demo-badge">Hardware</span>
+                    </div>
+                    <div id="newSensorList"></div>
+                    <p class="setting-hint">Select the physical DHT22 sensor wired to this pet's enclosure. Real temperature &amp; humidity readings will be streamed from this device.</p>
+                </div>
+                <div class="setting-group">
+                    <div class="setting-label-row">
+                        <span class="setting-icon-small" style="background:#f0f9ff;color:#0284c7;"><i class="fas fa-video"></i></span>
+                        <label>Camera</label>
+                        <span class="setting-badge demo-badge">Hardware</span>
+                    </div>
+                    <div id="newCameraList"></div>
+                    <p class="setting-hint">Select the USB camera monitoring this pet. Snapshots will be captured and analyzed for inactivity detection.</p>
+                </div>
+            </div>
+            <div class="setting-divider"></div>
+            <div class="setting-group">
+                <div class="setting-label-row">
+                    <span class="setting-icon-small" style="background:#fef2f2;color:#ea580c;"><i class="fas fa-temperature-high"></i></span>
+                    <label>Temperature Threshold</label>
+                </div>
+                <div class="setting-input-row">
+                    <input type="number" step="0.1" id="newTempMax" value="30.0" style="width:100px;">
+                    <span class="setting-unit">°C</span>
+                </div>
+                <p class="setting-hint">Alert triggers when temperature rises above this value.</p>
+            </div>
+            <div class="setting-group">
+                <div class="setting-label-row">
+                    <span class="setting-icon-small" style="background:#f0f9ff;color:#0284c7;"><i class="fas fa-tint"></i></span>
+                    <label>Humidity Threshold</label>
+                </div>
+                <div class="setting-input-row">
+                    <input type="number" step="0.1" id="newHumiMin" value="40.0" style="width:100px;">
+                    <span class="setting-unit">%</span>
+                </div>
+                <p class="setting-hint">Alert triggers when humidity drops below this value.</p>
+            </div>
+        </div>
+        <div class="modal-buttons" style="padding:1rem 2rem 1.5rem;margin-top:0;border-top:1px solid #f0f1f4;">
+            <button id="cancelCreateBtn" class="btn-secondary"><i class="fas fa-times"></i> Cancel</button>
+            <button id="confirmCreateBtn" class="btn-primary"><i class="fas fa-check"></i> Create Pet</button>
         </div>
     </div>
 </div>
 
 <!-- 摄像头配置模态框 -->
 <div id="cameraConfigModal" class="modal">
-    <div class="modal-content">
-        <h3>Camera Detection Settings</h3>
-        <label>Similarity threshold (0~1, higher = more sensitive to change):</label>
-        <input type="number" step="0.01" id="cameraSimilarity" value="0.95" style="width:100%; margin-bottom:1rem;">
-        <label>Inactive frames to trigger alert (1-10):</label>
-        <input type="number" step="1" id="cameraInactive" value="5" style="width:100%; margin-bottom:1rem;">
-        <p style="font-size:0.75rem; color:#6c757d;">*Higher similarity threshold means smaller changes are considered movement.<br>*Inactive frames = consecutive snapshots with no change before alert.</p>
+    <div class="modal-content settings-panel">
+        <div class="settings-header">
+            <div class="settings-icon"><i class="fas fa-camera"></i></div>
+            <h3>Camera Detection Settings</h3>
+            <p class="settings-subtitle" id="cameraConfigSubtitle">Configure snapshot analysis parameters</p>
+        </div>
+        <div class="settings-body">
+            <!-- Demo 模式：摄像头告警概率 -->
+            <div id="cameraProbGroup" class="setting-group" style="display:none;">
+                <div class="setting-label-row">
+                    <span class="setting-icon-small" style="background:#f5f3ff;color:#7c3aed;"><i class="fas fa-dice"></i></span>
+                    <label>Simulated Alert Probability</label>
+                    <span class="setting-badge demo-badge">Demo Mode</span>
+                </div>
+                <div class="setting-input-row">
+                    <input type="range" id="editCameraProb" min="0" max="1" step="0.05" value="0.3">
+                    <span class="setting-unit" id="editCameraProbLabel">30%</span>
+                </div>
+                <p class="setting-hint">Probability of generating a random camera motion alert on each snapshot. <strong>Higher values</strong> produce more frequent test alerts. Only applies to Demo Mode.</p>
+            </div>
+            <!-- Own Pet 模式：相似度阈值 + 静止帧数 -->
+            <div id="cameraOwnGroup" class="setting-group" style="display:none;">
+                <div class="setting-group">
+                    <div class="setting-label-row">
+                        <span class="setting-icon-small" style="background:#f0f9ff;color:#0284c7;"><i class="fas fa-microscope"></i></span>
+                        <label>Similarity Threshold</label>
+                    </div>
+                    <div class="setting-input-row">
+                        <input type="number" id="editCameraSimilarity" step="0.01" min="0" max="1">
+                        <span class="setting-unit">0–1</span>
+                    </div>
+                    <p class="setting-hint">How similar two consecutive snapshots must be to count as <strong>no movement</strong>. Higher values mean even tiny changes are treated as movement. Lower values are more tolerant of noise.</p>
+                </div>
+                <div class="setting-group">
+                    <div class="setting-label-row">
+                        <span class="setting-icon-small" style="background:#fef2f2;color:#ea580c;"><i class="fas fa-clock"></i></span>
+                        <label>Inactive Frame Limit</label>
+                    </div>
+                    <div class="setting-input-row">
+                        <input type="number" id="editCameraInactive" step="1" min="1" max="60">
+                        <span class="setting-unit">frames</span>
+                    </div>
+                    <p class="setting-hint">Number of consecutive <strong>no-change</strong> snapshots before a pet-inactivity alert is triggered. Higher values mean you wait longer before being notified.</p>
+                </div>
+            </div>
+        </div>
         <div class="modal-buttons">
-            <button id="cancelCameraConfigBtn" class="btn-secondary">Cancel</button>
-            <button id="saveCameraConfigBtn" class="btn-primary">Save</button>
+            <button id="cancelCameraConfigBtn" class="btn-secondary"><i class="fas fa-times"></i> Cancel</button>
+            <button id="saveCameraConfigBtn" class="btn-primary"><i class="fas fa-check"></i> Save Changes</button>
+        </div>
+    </div>
+</div>
+
+<!-- ★ 温湿度阈值模态框（替代原来的 prompt 弹窗）★ -->
+<div id="settingsModal" class="modal">
+    <div class="modal-content settings-panel">
+        <div class="settings-header">
+            <div class="settings-icon"><i class="fas fa-sliders-h"></i></div>
+            <h3>Alert Thresholds</h3>
+            <p class="settings-subtitle">Configure temperature &amp; humidity alert limits</p>
+        </div>
+        <div class="settings-body">
+            <div class="setting-group">
+                <div class="setting-label-row">
+                    <span class="setting-icon-small"><i class="fas fa-temperature-high"></i></span>
+                    <label>Temperature Threshold</label>
+                </div>
+                <div class="setting-input-row">
+                    <input type="number" id="setTempMax" step="0.1" min="0" max="60">
+                    <span class="setting-unit">°C</span>
+                </div>
+                <p class="setting-hint">Maximum safe ambient temperature. When exceeded, a <strong>high-temperature alert</strong> is triggered to warn you that the environment may be too hot for your pet.</p>
+            </div>
+            <div class="setting-group">
+                <div class="setting-label-row">
+                    <span class="setting-icon-small"><i class="fas fa-tint"></i></span>
+                    <label>Humidity Threshold</label>
+                </div>
+                <div class="setting-input-row">
+                    <input type="number" id="setHumiMin" step="0.1" min="0" max="100">
+                    <span class="setting-unit">%</span>
+                </div>
+                <p class="setting-hint">Minimum safe relative humidity. When humidity drops below this value, a <strong>low-humidity alert</strong> is triggered to warn you that the air may be too dry for your pet.</p>
+            </div>
+        </div>
+        <div class="modal-buttons">
+            <button id="cancelSettingsBtn" class="btn-secondary"><i class="fas fa-times"></i> Cancel</button>
+            <button id="saveSettingsBtn" class="btn-primary"><i class="fas fa-check"></i> Save Changes</button>
         </div>
     </div>
 </div>
 
 <script>
+    // ========== Toast 通知系统 ==========
+    function showToast(message, type) {
+        type = type || 'info';
+        const container = document.getElementById('toastContainer');
+        const icons = { success: 'fa-check-circle', error: 'fa-exclamation-circle', info: 'fa-info-circle' };
+        const toast = document.createElement('div');
+        toast.className = 'toast ' + type;
+        toast.innerHTML = `<i class="fas ${icons[type]}"></i> ${message}`;
+        container.appendChild(toast);
+        setTimeout(() => { if (toast.parentNode) toast.remove(); }, 3000);
+    }
+
     // ========== 全局变量与Socket连接 ==========
     const socket = io();
     let chart = null;
@@ -627,8 +998,8 @@
             legend: { data: ['Temperature (°C)', 'Humidity (%)'], bottom: 0, left: 'center', itemWidth: 28, itemHeight: 3, textStyle: { color: '#4b5563', fontSize: 11 } },
             grid: { containLabel: true, left: '3%', right: '5%', top: 12, bottom: 36 },
             xAxis: { type: 'category', data: timestamps, axisLabel: { rotate: 25, fontSize: 10, color: '#6b7280' }, axisLine: { lineStyle: { color: '#e4e7ec' } }, axisTick: { show: false } },
-            yAxis: [{ type: 'value', name: '°C', nameTextStyle: { color: '#6b7280', fontSize: 10 }, axisLabel: { fontSize: 10 }, splitLine: { lineStyle: { color: '#f0f1f4', type: 'dashed' } } },
-                       { type: 'value', name: '%', nameTextStyle: { color: '#6b7280', fontSize: 10 }, axisLabel: { fontSize: 10 }, splitLine: { show: false } }],
+            yAxis: [{ type: 'value', name: '°C', scale: true, nameTextStyle: { color: '#6b7280', fontSize: 10 }, axisLabel: { fontSize: 10 }, splitLine: { lineStyle: { color: '#f0f1f4', type: 'dashed' } } },
+                       { type: 'value', name: '%', scale: true, nameTextStyle: { color: '#6b7280', fontSize: 10 }, axisLabel: { fontSize: 10 }, splitLine: { show: false } }],
             series: [
                 { name: 'Temperature (°C)', type: 'line', data: temps, smooth: true, symbol: 'circle', symbolSize: 6, lineStyle: { color: '#ea580c', width: 2.5 }, areaStyle: { color: new echarts.graphic.LinearGradient(0,0,0,1, [{offset:0, color:'rgba(234,88,12,0.12)'},{offset:1, color:'rgba(234,88,12,0)'}]) } },
                 { name: 'Humidity (%)', type: 'line', yAxisIndex: 1, data: humis, smooth: true, symbol: 'circle', symbolSize: 6, lineStyle: { color: '#0284c7', width: 2.5 }, areaStyle: { color: new echarts.graphic.LinearGradient(0,0,0,1, [{offset:0, color:'rgba(2,132,199,0.12)'},{offset:1, color:'rgba(2,132,199,0)'}]) } }
@@ -730,7 +1101,6 @@
         currentMode = 'demo';
         document.getElementById('demoModeBtn').classList.add('active');
         document.getElementById('ownModeBtn').classList.remove('active');
-        document.getElementById('createPetBtn').style.display = 'none';
         resetDisplay();
         loadPetList();
     };
@@ -739,12 +1109,15 @@
         currentMode = 'own';
         document.getElementById('ownModeBtn').classList.add('active');
         document.getElementById('demoModeBtn').classList.remove('active');
-        document.getElementById('createPetBtn').style.display = 'inline-block';
         resetDisplay();
         loadPetList();
     };
 
     // ---------- 新建宠物模态框 ----------
+    const deviceSelectionGroup = document.getElementById('deviceSelectionGroup');
+    const newPetModalTitle = document.getElementById('newPetModalTitle');
+    const newPetModalSubtitle = document.getElementById('newPetModalSubtitle');
+
     async function loadDevicesForModal() {
         const res = await fetch('/api/devices');
         const devices = await res.json();
@@ -775,27 +1148,48 @@
     }
 
     document.getElementById('createPetBtn').onclick = () => {
-        loadDevicesForModal();
+        if (currentMode === 'demo') {
+            // Demo 模式：隐藏设备选择
+            newPetModalTitle.textContent = 'Create Demo Pet';
+            newPetModalSubtitle.textContent = 'Add a simulated pet for demonstration';
+            deviceSelectionGroup.style.display = 'none';
+        } else {
+            // Own Pet 模式：显示设备选择
+            newPetModalTitle.textContent = 'Create New Pet';
+            newPetModalSubtitle.textContent = 'Add a pet with real hardware sensors';
+            deviceSelectionGroup.style.display = '';
+            loadDevicesForModal();
+        }
         document.getElementById('newPetModal').style.display = 'flex';
     };
+
     document.getElementById('cancelCreateBtn').onclick = () => {
         document.getElementById('newPetModal').style.display = 'none';
     };
+
     document.getElementById('confirmCreateBtn').onclick = async () => {
         const name = document.getElementById('newPetName').value.trim();
-        if (!name) { alert("Please enter a name"); return; }
-        const selectedSensor = document.querySelector('input[name="newSensorSelect"]:checked');
-        if (!selectedSensor) { alert("Please select a sensor"); return; }
-        const selectedCamera = document.querySelector('input[name="newCameraSelect"]:checked');
-        if (!selectedCamera) { alert("Please select a camera"); return; }
+        if (!name) { showToast('Please enter a name', 'error'); return; }
+
         const species = document.getElementById('newPetSpecies').value;
         const tempMax = parseFloat(document.getElementById('newTempMax').value);
         const humiMin = parseFloat(document.getElementById('newHumiMin').value);
-        const payload = {
-            name, species, temp_max: tempMax, humi_min: humiMin,
-            temp_sensor_id: parseInt(selectedSensor.value),
-            camera_id: parseInt(selectedCamera.value)
-        };
+        const payload = { name, species, temp_max: tempMax, humi_min: humiMin };
+
+        if (currentMode === 'own') {
+            // Own Pet 模式：必须选设备
+            const selectedSensor = document.querySelector('input[name="newSensorSelect"]:checked');
+            if (!selectedSensor) { showToast('Please select a sensor', 'error'); return; }
+            const selectedCamera = document.querySelector('input[name="newCameraSelect"]:checked');
+            if (!selectedCamera) { showToast('Please select a camera', 'error'); return; }
+            payload.temp_sensor_id = parseInt(selectedSensor.value);
+            payload.camera_id = parseInt(selectedCamera.value);
+            payload.pet_type = 'custom';
+        } else {
+            // Demo 模式：使用模拟数据
+            payload.pet_type = 'default';
+        }
+
         try {
             const res = await fetch('/api/pets', {
                 method: 'POST',
@@ -803,62 +1197,121 @@
                 body: JSON.stringify(payload)
             });
             if (res.ok) {
-                alert("Pet created successfully!");
+                showToast('Pet "' + name + '" created successfully', 'success');
                 document.getElementById('newPetModal').style.display = 'none';
                 document.getElementById('newPetName').value = '';
-                document.getElementById('newPetSpecies').value = 'Cat';
                 document.getElementById('newTempMax').value = '30.0';
                 document.getElementById('newHumiMin').value = '40.0';
                 loadPetList();
             } else {
                 const err = await res.json();
-                alert("Error: " + (err.error || "Unknown"));
+                showToast(err.error || 'Create failed', 'error');
             }
         } catch(e) {
-            alert("Network error");
+            showToast('Network error', 'error');
         }
     };
 
     // ========== 摄像头配置模态框 ==========
+    const cameraConfigModal = document.getElementById('cameraConfigModal');
+    const cameraProbGroup = document.getElementById('cameraProbGroup');
+    const cameraOwnGroup = document.getElementById('cameraOwnGroup');
+    const editCameraProb = document.getElementById('editCameraProb');
+    const editCameraProbLabel = document.getElementById('editCameraProbLabel');
+    const editCameraSimilarity = document.getElementById('editCameraSimilarity');
+    const editCameraInactive = document.getElementById('editCameraInactive');
+
+    // 概率滑块 → 百分比联动
+    editCameraProb.addEventListener('input', () => {
+        editCameraProbLabel.textContent = Math.round(parseFloat(editCameraProb.value) * 100) + '%';
+    });
+
     document.getElementById('editCameraConfigBtn').onclick = async () => {
         if (!currentPetId) return;
-        try {
-            const res = await fetch(`/api/pets/${currentPetId}/camera_config`);
-            const config = await res.json();
-            document.getElementById('cameraSimilarity').value = config.similarity;
-            document.getElementById('cameraInactive').value = config.inactive;
-            document.getElementById('cameraConfigModal').style.display = 'flex';
-        } catch (err) {
-            alert("Failed to load camera settings");
+        if (currentMode === 'demo') {
+            // Demo 模式：加载摄像头告警概率
+            cameraProbGroup.style.display = '';
+            cameraOwnGroup.style.display = 'none';
+            try {
+                const res = await fetch(`/api/pets/${currentPetId}/thresholds`);
+                const data = await res.json();
+                const prob = data.camera_alert_probability != null ? data.camera_alert_probability : 0.3;
+                editCameraProb.value = prob;
+                editCameraProb.dispatchEvent(new Event('input'));
+                cameraConfigModal.style.display = 'flex';
+            } catch (err) {
+                showToast('Failed to load camera settings', 'error');
+            }
+        } else {
+            // Own Pet 模式：加载相似度 + 静止帧数
+            cameraProbGroup.style.display = 'none';
+            cameraOwnGroup.style.display = '';
+            try {
+                const res = await fetch(`/api/pets/${currentPetId}/camera_config`);
+                const config = await res.json();
+                editCameraSimilarity.value = config.similarity;
+                editCameraInactive.value = config.inactive;
+                cameraConfigModal.style.display = 'flex';
+            } catch (err) {
+                showToast('Failed to load camera settings', 'error');
+            }
         }
     };
+
     document.getElementById('cancelCameraConfigBtn').onclick = () => {
-        document.getElementById('cameraConfigModal').style.display = 'none';
+        cameraConfigModal.style.display = 'none';
     };
+
     document.getElementById('saveCameraConfigBtn').onclick = async () => {
         if (!currentPetId) return;
-        const similarity = parseFloat(document.getElementById('cameraSimilarity').value);
-        const inactive = parseInt(document.getElementById('cameraInactive').value);
-        if (isNaN(similarity) || isNaN(inactive)) {
-            alert("Invalid input");
-            return;
-        }
-        try {
-            const res = await fetch(`/api/pets/${currentPetId}/camera_config`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ similarity, inactive })
-            });
-            if (res.ok) {
-                alert("Camera settings updated!");
-                document.getElementById('cameraConfigModal').style.display = 'none';
-            } else {
-                alert("Update failed");
+        if (currentMode === 'demo') {
+            // 保存摄像头告警概率
+            const prob = parseFloat(editCameraProb.value);
+            try {
+                const res = await fetch(`/api/pets/${currentPetId}/thresholds`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ camera_alert_probability: prob })
+                });
+                if (res.ok) {
+                    cameraConfigModal.style.display = 'none';
+                    showToast('Camera probability updated', 'success');
+                } else {
+                    showToast('Update failed', 'error');
+                }
+            } catch (err) {
+                showToast('Network error', 'error');
             }
-        } catch (err) {
-            alert("Network error");
+        } else {
+            // 保存相似度 + 静止帧数
+            const similarity = parseFloat(editCameraSimilarity.value);
+            const inactive = parseInt(editCameraInactive.value);
+            if (isNaN(similarity) || isNaN(inactive)) {
+                showToast('Invalid input values', 'error');
+                return;
+            }
+            try {
+                const res = await fetch(`/api/pets/${currentPetId}/camera_config`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ similarity, inactive })
+                });
+                if (res.ok) {
+                    cameraConfigModal.style.display = 'none';
+                    showToast('Camera detection settings updated', 'success');
+                } else {
+                    showToast('Update failed', 'error');
+                }
+            } catch (err) {
+                showToast('Network error', 'error');
+            }
         }
     };
+
+    // 点击背景关闭
+    cameraConfigModal.addEventListener('click', (e) => {
+        if (e.target === cameraConfigModal) cameraConfigModal.style.display = 'none';
+    });
 
     // ========== WebSocket 事件 ==========
     socket.on('initial_data', (data) => {
@@ -915,62 +1368,122 @@
     };
 
     // 远程控制
+    const feedDot = document.getElementById('feedDot');
+    const acDot = document.getElementById('acDot');
+    const feederEl = document.getElementById('feederStatus');
+    const acEl = document.getElementById('acStatus');
+    let feedTimer = null, acTimer = null;
+
+    function ctrlPending(dot, el, text) {
+        dot.className = 'ctrl-dot busy';
+        el.innerText = text;
+    }
+    function ctrlDone(dot, el, text) {
+        dot.className = 'ctrl-dot idle';
+        el.innerText = text;
+    }
+
     document.getElementById('feedBtn').onclick = () => {
-        if (!currentPetId) return;
+        if (!currentPetId) { showToast('No pet selected', 'error'); return; }
         socket.emit('control', { pet_id: currentPetId, device: 'feeder', action: 'feed' });
-        document.getElementById('feederStatus').innerText = 'Sending...';
+        ctrlPending(feedDot, feederEl, 'actuating');
+        showToast('Feeder triggered', 'info');
+        if (feedTimer) clearTimeout(feedTimer);
+        feedTimer = setTimeout(() => ctrlDone(feedDot, feederEl, 'standby'), 8000);
     };
     document.getElementById('acOnBtn').onclick = () => {
-        if (!currentPetId) return;
+        if (!currentPetId) { showToast('No pet selected', 'error'); return; }
         socket.emit('control', { pet_id: currentPetId, device: 'ac', action: 'on' });
-        document.getElementById('acStatus').innerText = 'Sending...';
+        ctrlPending(acDot, acEl, 'actuating');
+        showToast('Cooling engaged', 'info');
+        if (acTimer) clearTimeout(acTimer);
+        acTimer = setTimeout(() => ctrlDone(acDot, acEl, 'standby'), 8000);
     };
     document.getElementById('acOffBtn').onclick = () => {
-        if (!currentPetId) return;
+        if (!currentPetId) { showToast('No pet selected', 'error'); return; }
         socket.emit('control', { pet_id: currentPetId, device: 'ac', action: 'off' });
-        document.getElementById('acStatus').innerText = 'Sending...';
+        ctrlPending(acDot, acEl, 'actuating');
+        showToast('Cooling disengaged', 'info');
+        if (acTimer) clearTimeout(acTimer);
+        acTimer = setTimeout(() => ctrlDone(acDot, acEl, 'standby'), 8000);
     };
 
     socket.on('control_result', (data) => {
         if (data.pet_id !== currentPetId) return;
-        let statusText = data.status;
-        if (statusText === '指令已发送') statusText = 'Command sent';
+        const txt = data.status === '指令已发送' ? 'transmitted' : data.status;
         if (data.device === 'feeder') {
-            document.getElementById('feederStatus').innerText = statusText;
-            setTimeout(() => document.getElementById('feederStatus').innerText = 'Ready', 3000);
-        } else if (data.device === 'ac') {
-            document.getElementById('acStatus').innerText = statusText;
-            setTimeout(() => document.getElementById('acStatus').innerText = 'Ready', 3000);
+            feederEl.innerText = txt;
+        } else {
+            acEl.innerText = txt;
         }
     });
 
     socket.on('feeder_status', (data) => {
         if (data.pet_id !== currentPetId) return;
-        document.getElementById('feederStatus').innerText = (data.status === 'success') ? 'Feed success' : 'Feed failed';
-        setTimeout(() => document.getElementById('feederStatus').innerText = 'Ready', 3000);
+        if (feedTimer) { clearTimeout(feedTimer); feedTimer = null; }
+        const ok = data.status === 'success';
+        ctrlDone(feedDot, feederEl, ok ? 'completed' : 'failed');
+        showToast(ok ? 'Feeder executed' : 'Feeder failed', ok ? 'success' : 'error');
+        setTimeout(() => ctrlDone(feedDot, feederEl, 'standby'), 3000);
     });
     socket.on('ac_status', (data) => {
         if (data.pet_id !== currentPetId) return;
-        let txt = (data.status === 'on') ? 'AC turned on' : (data.status === 'off') ? 'AC turned off' : data.status;
-        document.getElementById('acStatus').innerText = txt;
-        setTimeout(() => document.getElementById('acStatus').innerText = 'Ready', 3000);
+        if (acTimer) { clearTimeout(acTimer); acTimer = null; }
+        const ok = data.status === 'on' || data.status === 'off';
+        const txt = data.status === 'on' ? 'cooling' : data.status === 'off' ? 'off' : data.status;
+        ctrlDone(acDot, acEl, ok ? txt : 'failed');
+        showToast(ok ? 'Climate: ' + txt : 'Climate command failed', ok ? 'success' : 'error');
+        setTimeout(() => ctrlDone(acDot, acEl, 'standby'), 3000);
     });
 
-    // 编辑阈值
+    // ★ 温湿度阈值模态框
+    const settingsModal = document.getElementById('settingsModal');
+    const setTempMax = document.getElementById('setTempMax');
+    const setHumiMin = document.getElementById('setHumiMin');
+
     document.getElementById('editThresholdBtn').onclick = async () => {
         if (!currentPetId) return;
-        const newTemp = prompt("Enter new temperature threshold (°C):", "30.0");
-        const newHumi = prompt("Enter new humidity threshold (%):", "40.0");
-        if (newTemp !== null && newHumi !== null) {
+        try {
+            const res = await fetch(`/api/pets/${currentPetId}/thresholds`);
+            const data = await res.json();
+            setTempMax.value = data.temp_max || 30.0;
+            setHumiMin.value = data.humi_min || 40.0;
+            settingsModal.style.display = 'flex';
+        } catch (err) {
+            showToast('Failed to load current settings', 'error');
+        }
+    };
+
+    document.getElementById('cancelSettingsBtn').onclick = () => {
+        settingsModal.style.display = 'none';
+    };
+
+    document.getElementById('saveSettingsBtn').onclick = async () => {
+        if (!currentPetId) return;
+        const payload = {
+            temp_max: parseFloat(setTempMax.value),
+            humi_min: parseFloat(setHumiMin.value)
+        };
+        try {
             const res = await fetch(`/api/pets/${currentPetId}/thresholds`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ temp_max: parseFloat(newTemp), humi_min: parseFloat(newHumi) })
+                body: JSON.stringify(payload)
             });
-            if (res.ok) alert("Thresholds updated! New rules will apply immediately.");
-            else alert("Update failed.");
+            if (res.ok) {
+                settingsModal.style.display = 'none';
+                showToast('Thresholds updated', 'success');
+            } else {
+                showToast('Update failed', 'error');
+            }
+        } catch (err) {
+            showToast('Network error', 'error');
         }
     };
+
+    settingsModal.addEventListener('click', (e) => {
+        if (e.target === settingsModal) settingsModal.style.display = 'none';
+    });
 
     // 管理宠物按钮
     document.getElementById('managePetsBtn').onclick = () => {

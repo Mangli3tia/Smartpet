@@ -3,141 +3,362 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Pets</title>
+    <title>Manage Pets | Smart Pet Monitor</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --color-bg: #f5f6f8;
+            --color-surface: #ffffff;
+            --color-border: #e4e7ec;
+            --color-primary: #4f46e5;
+            --color-danger: #dc2626;
+            --color-success: #059669;
+            --color-text: #111827;
+            --color-text-secondary: #4b5563;
+            --color-text-muted: #6b7280;
+            --radius-xl: 1rem;
+            --radius-2xl: 1.25rem;
+            --shadow-card: 0 1px 3px rgba(0,0,0,0.04), 0 1px 1px rgba(0,0,0,0.02), 0 0 0 1px rgba(0,0,0,0.03);
+            --shadow-lg: 0 12px 16px -4px rgba(0,0,0,0.06);
+        }
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Inter', sans-serif;
-            background: #f5f7fc;
-            padding: 2rem;
-            margin: 0;
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--color-bg);
+            min-height: 100vh;
+            padding: 2rem 1.5rem;
+            color: var(--color-text);
+            letter-spacing: -0.011em;
         }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 2rem;
-            padding: 2rem;
-            box-shadow: 0 20px 35px -10px rgba(0,0,0,0.1);
-        }
-        h2 {
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
-        }
-        .pet-item {
-            border: 1px solid #e2e8f0;
-            border-radius: 1rem;
-            padding: 1rem;
-            margin-bottom: 1rem;
-            background: #fefefe;
+        .container { max-width: 800px; margin: 0 auto; }
+        .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 0.5rem;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
         }
-        .pet-info {
-            flex: 1;
+        .header h1 {
+            font-size: 1.35rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
         }
-        .pet-actions button {
-            margin-left: 0.5rem;
-            padding: 0.3rem 0.8rem;
-            border-radius: 2rem;
-            border: none;
-            cursor: pointer;
+        .header h1 i {
+            width: 2.5rem; height: 2.5rem;
+            background: linear-gradient(135deg, #4f46e5, #6366f1);
+            color: white;
+            border-radius: 0.75rem;
+            display: inline-flex;
+            align-items: center; justify-content: center;
+            font-size: 1.1rem;
+        }
+        .btn {
             font-family: 'Inter', sans-serif;
-            font-weight: 500;
-        }
-        .btn-edit {
-            background: #4f46e5;
-            color: white;
-        }
-        .btn-delete {
-            background: #dc2626;
-            color: white;
-        }
-        .btn-back {
-            background: #6c757d;
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 2rem;
+            font-weight: 600; font-size: 0.825rem;
+            padding: 0.55rem 1.2rem;
+            border-radius: 0.75rem;
+            border: none; cursor: pointer;
+            display: inline-flex; align-items: center; gap: 0.45rem;
+            transition: all 0.15s;
             text-decoration: none;
-            display: inline-block;
-            margin-top: 1rem;
         }
-        hr {
-            margin: 1rem 0;
+        .btn-back { background: var(--color-text-secondary); color: white; }
+        .btn-back:hover { background: #374151; }
+        .btn-edit { background: var(--color-primary); color: white; }
+        .btn-edit:hover { background: #4338ca; }
+        .btn-delete { background: var(--color-danger); color: white; }
+        .btn-delete:hover { background: #b91c1c; }
+        .btn-cancel { background: #e5e7eb; color: #374151; }
+        .btn-cancel:hover { background: #d1d5db; }
+        .btn-save { background: var(--color-primary); color: white; }
+        .btn-save:hover { background: #4338ca; }
+        .btn-danger-confirm { background: var(--color-danger); color: white; }
+        .btn-danger-confirm:hover { background: #b91c1c; }
+
+        .pet-card {
+            background: var(--color-surface);
+            border-radius: var(--radius-2xl);
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 0.75rem;
+            box-shadow: var(--shadow-card);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
         }
+        .pet-info .pet-name {
+            font-weight: 700; font-size: 1rem;
+            display: flex; align-items: center; gap: 0.5rem;
+        }
+        .pet-info .pet-meta {
+            font-size: 0.78rem; color: var(--color-text-muted);
+            margin-top: 0.2rem;
+        }
+        .badge {
+            font-size: 0.65rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.05em;
+            padding: 0.15rem 0.55rem; border-radius: 1rem;
+        }
+        .badge-demo { background: #dbeafe; color: #1e40af; }
+        .badge-custom { background: #fef3c7; color: #92400e; }
+        .pet-actions { display: flex; gap: 0.5rem; flex-shrink: 0; }
+        .empty-state {
+            text-align: center; padding: 3rem 1rem; color: var(--color-text-muted);
+        }
+        .empty-state i { font-size: 2.5rem; margin-bottom: 0.75rem; display: block; opacity: 0.4; }
+
+        /* Modal */
+        .modal {
+            display: none; position: fixed; z-index: 2000;
+            left: 0; top: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.45);
+            align-items: center; justify-content: center;
+        }
+        .modal-content {
+            background: white; border-radius: 1.25rem;
+            padding: 2rem; max-width: 440px; width: 90%;
+            box-shadow: var(--shadow-lg);
+        }
+        .modal-content h3 { font-size: 1.1rem; margin-bottom: 1.25rem; }
+        .modal-content label {
+            display: block; font-weight: 600; font-size: 0.82rem;
+            margin: 0.85rem 0 0.3rem; color: var(--color-text-secondary);
+        }
+        .modal-content input, .modal-content select {
+            width: 100%; padding: 0.55rem 0.75rem;
+            border: 1.5px solid #d1d5db; border-radius: 0.55rem;
+            font-family: 'Inter', sans-serif; font-size: 0.9rem;
+            transition: border-color 0.15s, box-shadow 0.15s;
+            background: #f9fafb;
+        }
+        .modal-content input:focus, .modal-content select:focus {
+            outline: none; border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99,102,241,0.12); background: white;
+        }
+        .modal-buttons { display: flex; justify-content: flex-end; gap: 0.65rem; margin-top: 1.5rem; }
+        .delete-warning {
+            background: #fef2f2; color: #991b1b;
+            padding: 0.75rem 1rem; border-radius: 0.65rem;
+            font-size: 0.82rem; margin-top: 0.75rem;
+            display: flex; align-items: center; gap: 0.5rem;
+        }
+
+        /* Toast */
+        .toast-container {
+            position: fixed; top: 1.25rem; right: 1.25rem;
+            z-index: 9999; display: flex; flex-direction: column; gap: 0.5rem;
+            pointer-events: none;
+        }
+        .toast {
+            background: #1e1b4b; color: white;
+            padding: 0.8rem 1.2rem; border-radius: 0.75rem;
+            font-family: 'Inter', sans-serif; font-size: 0.84rem; font-weight: 500;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+            display: flex; align-items: center; gap: 0.55rem;
+            animation: toastIn 0.25s ease-out, toastOut 0.25s ease-in forwards;
+            animation-delay: 0s, 2.5s;
+            pointer-events: auto; max-width: 380px;
+        }
+        .toast.success { border-left: 3px solid #22c55e; }
+        .toast.error { border-left: 3px solid #ef4444; }
+        .toast.info { border-left: 3px solid #6366f1; }
+        @keyframes toastIn { from { opacity: 0; transform: translateX(60px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes toastOut { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(60px); } }
     </style>
 </head>
 <body>
 <div class="container">
-    <h2>🐾 Manage Pets</h2>
+    <div class="header">
+        <h1><i class="fas fa-users-cog"></i> Manage Pets</h1>
+        <a href="/dashboard" class="btn btn-back"><i class="fas fa-arrow-left"></i> Back to Dashboard</a>
+    </div>
     <div id="petsList"></div>
-    <a href="/dashboard" class="btn-back">← Back to Dashboard</a>
+</div>
+
+<!-- Toast 容器 -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- 编辑宠物模态框 -->
+<div id="editModal" class="modal">
+    <div class="modal-content">
+        <h3><i class="fas fa-pen"></i> Edit Pet</h3>
+        <input type="hidden" id="editPetId">
+        <label>Name</label>
+        <input type="text" id="editPetName">
+        <label>Species</label>
+        <select id="editPetSpecies">
+            <option value="Cat">Cat</option>
+            <option value="Dog">Dog</option>
+<option value="Other">Other</option>
+        </select>
+        <label>Temperature Threshold (°C) — alert triggers above this value</label>
+        <input type="number" id="editPetTemp" step="0.1" min="0" max="60">
+        <label>Humidity Threshold (%) — alert triggers below this value</label>
+        <input type="number" id="editPetHumi" step="0.1" min="0" max="100">
+        <div class="modal-buttons">
+            <button class="btn btn-cancel" onclick="closeEditModal()"><i class="fas fa-times"></i> Cancel</button>
+            <button class="btn btn-save" onclick="saveEdit()"><i class="fas fa-check"></i> Save Changes</button>
+        </div>
+    </div>
+</div>
+
+<!-- 删除确认模态框 -->
+<div id="deleteModal" class="modal">
+    <div class="modal-content">
+        <h3><i class="fas fa-triangle-exclamation" style="color:#dc2626;"></i> Delete Pet</h3>
+        <input type="hidden" id="deletePetId">
+        <p style="color:#4b5563;">Are you sure you want to permanently delete <strong id="deletePetName"></strong>?</p>
+        <div class="delete-warning">
+            <i class="fas fa-exclamation-circle"></i>
+            All sensor history and alert records for this pet will be permanently removed. This action cannot be undone.
+        </div>
+        <div class="modal-buttons">
+            <button class="btn btn-cancel" onclick="closeDeleteModal()"><i class="fas fa-times"></i> Cancel</button>
+            <button class="btn btn-danger-confirm" onclick="confirmDelete()"><i class="fas fa-trash"></i> Delete Permanently</button>
+        </div>
+    </div>
 </div>
 
 <script>
-    async function loadPets() {
-        const res = await fetch('/api/pets');
-        const pets = await res.json();
-        const container = document.getElementById('petsList');
-        container.innerHTML = '';
-        for (const pet of pets) {
-            const div = document.createElement('div');
-            div.className = 'pet-item';
-            div.innerHTML = `
-                <div class="pet-info">
-                    <strong>${pet.name} (${pet.species})</strong><br>
-                    <small>ID: ${pet.id} | Temp threshold: ${pet.temp_max}°C | Humidity threshold: ${pet.humi_min}%</small>
-                </div>
-                <div class="pet-actions">
-                    <button class="btn-edit" onclick="editPet(${pet.id}, '${pet.name}', '${pet.species}', ${pet.temp_max}, ${pet.humi_min})">Edit</button>
-                    <button class="btn-delete" onclick="deletePet(${pet.id})">Delete</button>
-                </div>
-            `;
-            container.appendChild(div);
+    // ========== Toast 通知系统 ==========
+    function showToast(message, type) {
+        type = type || 'info';
+        const container = document.getElementById('toastContainer');
+        const icons = { success: 'fa-check-circle', error: 'fa-exclamation-circle', info: 'fa-info-circle' };
+        const toast = document.createElement('div');
+        toast.className = 'toast ' + type;
+        toast.innerHTML = `<i class="fas ${icons[type]}"></i> ${message}`;
+        container.appendChild(toast);
+        setTimeout(() => { if (toast.parentNode) toast.remove(); }, 3000);
+    }
+
+    // ========== 编辑模态框 ==========
+    function openEditModal(pet) {
+        document.getElementById('editPetId').value = pet.id;
+        document.getElementById('editPetName').value = pet.name;
+        document.getElementById('editPetSpecies').value = pet.species;
+        document.getElementById('editPetTemp').value = pet.temp_max;
+        document.getElementById('editPetHumi').value = pet.humi_min;
+        document.getElementById('editModal').style.display = 'flex';
+    }
+
+    function closeEditModal() {
+        document.getElementById('editModal').style.display = 'none';
+    }
+
+    async function saveEdit() {
+        const id = document.getElementById('editPetId').value;
+        const name = document.getElementById('editPetName').value.trim();
+        if (!name) { showToast('Pet name is required', 'error'); return; }
+        const payload = {
+            name: name,
+            species: document.getElementById('editPetSpecies').value,
+            temp_max: parseFloat(document.getElementById('editPetTemp').value),
+            humi_min: parseFloat(document.getElementById('editPetHumi').value)
+        };
+        try {
+            const res = await fetch(`/api/pets/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if (res.ok) {
+                closeEditModal();
+                showToast('Pet "' + name + '" updated successfully', 'success');
+                loadPets();
+            } else {
+                const err = await res.json();
+                showToast(err.error || 'Update failed', 'error');
+            }
+        } catch (e) {
+            showToast('Network error — please try again', 'error');
         }
     }
 
-    window.editPet = async (id, name, species, tempMax, humiMin) => {
-        const newName = prompt("New name:", name);
-        if (newName === null) return;
-        const newSpecies = prompt("New species:", species);
-        if (newSpecies === null) return;
-        const newTemp = prompt("New temperature threshold (°C):", tempMax);
-        if (newTemp === null) return;
-        const newHumi = prompt("New humidity threshold (%):", humiMin);
-        if (newHumi === null) return;
+    // ========== 删除确认模态框 ==========
+    function openDeleteModal(pet) {
+        document.getElementById('deletePetId').value = pet.id;
+        document.getElementById('deletePetName').textContent = pet.name + ' (' + pet.species + ')';
+        document.getElementById('deleteModal').style.display = 'flex';
+    }
 
-        const res = await fetch(`/api/pets/${id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                name: newName,
-                species: newSpecies,
-                temp_max: parseFloat(newTemp),
-                humi_min: parseFloat(newHumi)
-            })
-        });
-        if (res.ok) {
-            alert("Pet updated.");
-            loadPets();
-        } else {
-            alert("Update failed.");
-        }
-    };
+    function closeDeleteModal() {
+        document.getElementById('deleteModal').style.display = 'none';
+    }
 
-    window.deletePet = async (id) => {
-        if (!confirm("Delete this pet? All its data will be lost.")) return;
-        const res = await fetch(`/api/pets/${id}`, { method: 'DELETE' });
-        if (res.ok) {
-            alert("Pet deleted.");
-            loadPets();
-        } else {
-            const err = await res.json();
-            alert(err.error || "Delete failed.");
+    async function confirmDelete() {
+        const id = document.getElementById('deletePetId').value;
+        const name = document.getElementById('deletePetName').textContent;
+        try {
+            const res = await fetch(`/api/pets/${id}`, { method: 'DELETE' });
+            if (res.ok) {
+                closeDeleteModal();
+                showToast('Pet deleted permanently', 'success');
+                loadPets();
+            } else {
+                const err = await res.json();
+                showToast(err.error || 'Delete failed', 'error');
+            }
+        } catch (e) {
+            showToast('Network error — please try again', 'error');
         }
-    };
+    }
+
+    // 点击背景关闭模态框
+    document.getElementById('editModal').addEventListener('click', function(e) {
+        if (e.target === this) closeEditModal();
+    });
+    document.getElementById('deleteModal').addEventListener('click', function(e) {
+        if (e.target === this) closeDeleteModal();
+    });
+
+    // ========== 宠物列表 ==========
+    async function loadPets() {
+        try {
+            const res = await fetch('/api/pets');
+            const pets = await res.json();
+            const container = document.getElementById('petsList');
+            if (pets.length === 0) {
+                container.innerHTML = `<div class="empty-state"><i class="fas fa-paw"></i><p>No pets yet. <a href="/create-pet">Create one</a> or go to the <a href="/dashboard">dashboard</a>.</p></div>`;
+                return;
+            }
+            container.innerHTML = '';
+            for (const pet of pets) {
+                const badgeClass = pet.type === 'default' ? 'badge-demo' : 'badge-custom';
+                const badgeText = pet.type === 'default' ? 'Demo' : 'Custom';
+                const div = document.createElement('div');
+                div.className = 'pet-card';
+                div.innerHTML = `
+                    <div class="pet-info">
+                        <div class="pet-name">
+                            ${pet.name}
+                            <span class="badge ${badgeClass}">${badgeText}</span>
+                        </div>
+                        <div class="pet-meta">
+                            ${pet.species} &middot; Temp ≤ ${pet.temp_max}°C &middot; Humi ≥ ${pet.humi_min}% &middot; ID #${pet.id}
+                        </div>
+                    </div>
+                    <div class="pet-actions">
+                        <button class="btn btn-edit"><i class="fas fa-pen"></i> Edit</button>
+                        <button class="btn btn-delete"><i class="fas fa-trash"></i> Delete</button>
+                    </div>
+                `;
+                // 绑定事件（避免内联 onclick）
+                const editBtn = div.querySelector('.btn-edit');
+                const deleteBtn = div.querySelector('.btn-delete');
+                editBtn.addEventListener('click', () => openEditModal(pet));
+                deleteBtn.addEventListener('click', () => openDeleteModal(pet));
+                container.appendChild(div);
+            }
+        } catch (e) {
+            showToast('Failed to load pet list', 'error');
+        }
+    }
 
     loadPets();
 </script>

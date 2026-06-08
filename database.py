@@ -31,15 +31,16 @@ def init_db():
                   temp_sensor_id INTEGER,
                   camera_id INTEGER,
                   camera_similarity REAL DEFAULT 0.95,
-                  camera_inactive INTEGER DEFAULT 5)''')
+                  camera_inactive INTEGER DEFAULT 5,
+                  camera_alert_probability REAL DEFAULT 0.3)''')
     # 插入默认宠物（type='default'）
     c.execute("SELECT COUNT(*) FROM pets WHERE type='default'")
     if c.fetchone()[0] == 0:
         now = datetime.now().isoformat()
         c.execute("INSERT INTO pets (name, species, temp_max, humi_min, created_at, type) VALUES (?,?,?,?,?,?)",
-                  ("Fluffy", "DemoCat", DEFAULT_TEMP_MAX, DEFAULT_HUMI_MIN, now, "default"))
+                  ("Fluffy", "Cat", DEFAULT_TEMP_MAX, DEFAULT_HUMI_MIN, now, "default"))
         c.execute("INSERT INTO pets (name, species, temp_max, humi_min, created_at, type) VALUES (?,?,?,?,?,?)",
-                  ("Buddy", "DemoDog", DEFAULT_TEMP_MAX, DEFAULT_HUMI_MIN, now, "default"))
+                  ("Buddy", "Dog", DEFAULT_TEMP_MAX, DEFAULT_HUMI_MIN, now, "default"))
     conn.commit()
     conn.close()
 
@@ -55,23 +56,24 @@ def get_pets_by_type(pet_type):
 def get_all_pets():
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
-    c.execute("SELECT id, name, species, age, photo, temp_max, humi_min, type, temp_sensor_id, camera_id, camera_similarity, camera_inactive FROM pets")
+    c.execute("SELECT id, name, species, age, photo, temp_max, humi_min, type, temp_sensor_id, camera_id, camera_similarity, camera_inactive, camera_alert_probability FROM pets")
     rows = c.fetchall()
     conn.close()
     return [{"id": r[0], "name": r[1], "species": r[2], "age": r[3], "photo": r[4],
              "temp_max": r[5], "humi_min": r[6], "type": r[7],
              "temp_sensor_id": r[8], "camera_id": r[9],
-             "camera_similarity": r[10], "camera_inactive": r[11]} for r in rows]
+             "camera_similarity": r[10], "camera_inactive": r[11],
+             "camera_alert_probability": r[12] if r[12] is not None else 0.3} for r in rows]
 
 def get_pet_thresholds(pet_id):
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
-    c.execute("SELECT temp_max, humi_min FROM pets WHERE id=?", (pet_id,))
+    c.execute("SELECT temp_max, humi_min, camera_alert_probability FROM pets WHERE id=?", (pet_id,))
     row = c.fetchone()
     conn.close()
     if row:
-        return {"temp_max": row[0], "humi_min": row[1]}
-    return {"temp_max": DEFAULT_TEMP_MAX, "humi_min": DEFAULT_HUMI_MIN}
+        return {"temp_max": row[0], "humi_min": row[1], "camera_alert_probability": row[2] if row[2] is not None else 0.3}
+    return {"temp_max": DEFAULT_TEMP_MAX, "humi_min": DEFAULT_HUMI_MIN, "camera_alert_probability": 0.3}
 
 def get_pet_camera_config(pet_id):
     conn = sqlite3.connect(DB_FILE)
@@ -118,13 +120,38 @@ def create_pet(name, species, temp_max, humi_min, temp_sensor_id=None, camera_id
     conn.close()
     return pet_id
 
-def update_pet_thresholds(pet_id, temp_max=None, humi_min=None):
+def update_pet_thresholds(pet_id, temp_max=None, humi_min=None, camera_alert_probability=None):
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
     if temp_max is not None:
         c.execute("UPDATE pets SET temp_max = ? WHERE id = ?", (temp_max, pet_id))
     if humi_min is not None:
         c.execute("UPDATE pets SET humi_min = ? WHERE id = ?", (humi_min, pet_id))
+    if camera_alert_probability is not None:
+        c.execute("UPDATE pets SET camera_alert_probability = ? WHERE id = ?", (camera_alert_probability, pet_id))
+    conn.commit()
+    conn.close()
+
+def update_pet(pet_id, name=None, species=None, temp_max=None, humi_min=None):
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    if name is not None:
+        c.execute("UPDATE pets SET name = ? WHERE id = ?", (name, pet_id))
+    if species is not None:
+        c.execute("UPDATE pets SET species = ? WHERE id = ?", (species, pet_id))
+    if temp_max is not None:
+        c.execute("UPDATE pets SET temp_max = ? WHERE id = ?", (temp_max, pet_id))
+    if humi_min is not None:
+        c.execute("UPDATE pets SET humi_min = ? WHERE id = ?", (humi_min, pet_id))
+    conn.commit()
+    conn.close()
+
+def delete_pet(pet_id):
+    conn = sqlite3.connect(DB_FILE)
+    c = conn.cursor()
+    c.execute("DELETE FROM sensor_data WHERE pet_id=?", (pet_id,))
+    c.execute("DELETE FROM alerts WHERE pet_id=?", (pet_id,))
+    c.execute("DELETE FROM pets WHERE id=?", (pet_id,))
     conn.commit()
     conn.close()
 

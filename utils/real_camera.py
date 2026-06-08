@@ -19,7 +19,7 @@ def capture_image(device_id=2, event_type="manual"):
         cap.release()
         if ret:
             timestamp = int(time.time())
-            img_name = f"snapshot_{timestamp}.jpg"
+            img_name = f"real_{timestamp}.jpg"
             img_path = os.path.join(STATIC_DIR, img_name)
             cv2.imwrite(img_path, frame)
             print(f"Real snapshot saved: {img_path}")
