@@ -124,7 +124,10 @@ def api_update_pet(pet_id):
     species = data.get('species')
     temp_max = data.get('temp_max')
     humi_min = data.get('humi_min')
-    update_pet(pet_id, name=name, species=species, temp_max=temp_max, humi_min=humi_min)
+    temp_sensor_id = data.get('temp_sensor_id')
+    camera_id = data.get('camera_id')
+    update_pet(pet_id, name=name, species=species, temp_max=temp_max, humi_min=humi_min,
+               temp_sensor_id=temp_sensor_id, camera_id=camera_id)
     return jsonify({"message": "Pet updated"})
 
 @app.route('/api/pets/<int:pet_id>', methods=['DELETE'])

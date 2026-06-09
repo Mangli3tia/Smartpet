@@ -3,85 +3,133 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Pet Monitor - Welcome</title>
+    <title>Smart Pet Monitor</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
     <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
-            font-family: 'Inter', system-ui, sans-serif;
-            background: linear-gradient(135deg, #f5f7fc 0%, #eef2f9 100%);
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
             min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0;
-            padding: 20px;
-        }
-        .card {
-            background: white;
-            border-radius: 2rem;
+            display: flex; align-items: center; justify-content: center;
+            position: relative; overflow-x: hidden;
             padding: 2rem;
-            max-width: 500px;
-            width: 100%;
-            box-shadow: 0 20px 35px -10px rgba(0,0,0,0.1);
-            text-align: center;
+            /* Fallback solid background */
+            background: #e8ecf2;
         }
+
+        /* Blurred pet image backdrop */
+        body::before {
+            content: '';
+            position: fixed; inset: -40px;
+            background:
+                linear-gradient(180deg, rgba(255,255,255,0.75) 0%, rgba(255,255,255,0.55) 100%),
+                url('https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=1200&q=60') center/cover no-repeat;
+            filter: blur(4px);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .container {
+            position: relative; z-index: 1;
+            display: flex; flex-direction: column; align-items: center;
+            gap: 2rem; width: 100%; max-width: 680px;
+        }
+
+        /* Logo */
+        .logo {
+            width: 5rem; height: 5rem;
+            background: linear-gradient(135deg, #6366f1 0%, #818cf8 40%, #a78bfa 100%);
+            border-radius: 1.5rem;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2.2rem; color: white;
+            box-shadow: 0 16px 40px rgba(99,102,241,0.30), 0 0 0 14px rgba(99,102,241,0.04);
+            animation: floatIcon 4s ease-in-out infinite;
+        }
+        @keyframes floatIcon { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-8px);} }
+
         h1 {
-            font-size: 2rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #2c3e66, #1a2a44);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            margin-bottom: 1.5rem;
+            font-size: 1.8rem; font-weight: 800; letter-spacing: -0.03em;
+            background: linear-gradient(135deg, #1e1b4b, #4338ca);
+            -webkit-background-clip: text; background-clip: text; color: transparent;
         }
-        .btn-group {
-            display: flex;
-            flex-direction: column;
+
+        /* Two cards */
+        .choice-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
             gap: 1rem;
-            margin-top: 1.5rem;
+            width: 100%;
         }
-        .btn {
-            font-family: 'Inter', sans-serif;
-            font-weight: 600;
-            padding: 0.8rem 1.5rem;
-            border-radius: 3rem;
+        @media (max-width: 560px) { .choice-row { grid-template-columns: 1fr; } }
+
+        .choice-card {
+            background: rgba(255,255,255,0.85);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.6);
+            border-radius: 1.25rem;
+            padding: 2rem 1.5rem;
+            text-align: center;
             text-decoration: none;
-            font-size: 1rem;
-            transition: all 0.2s;
-            display: inline-block;
+            transition: all 0.25s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            display: flex; flex-direction: column; align-items: center; gap: 1rem;
+            color: inherit;
         }
-        .btn-primary {
-            background: #4f46e5;
-            color: white;
-            box-shadow: 0 4px 10px rgba(79,70,229,0.3);
+        .choice-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 28px rgba(0,0,0,0.08);
+            border-color: #c4c8d4;
         }
-        .btn-primary:hover {
-            background: #4338ca;
-            transform: translateY(-2px);
+
+        .choice-card .card-icon {
+            width: 3.5rem; height: 3.5rem; border-radius: 1rem;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem;
         }
-        .btn-secondary {
-            background: white;
-            color: #1e293b;
-            border: 1px solid #cbd5e1;
+        .card-demo .card-icon { background: #eef0ff; color: #6366f1; }
+        .card-own  .card-icon { background: #fef3c7; color: #d97706; }
+
+        .choice-card h2 {
+            font-size: 1.1rem; font-weight: 700; color: #1a1d26;
         }
-        .btn-secondary:hover {
-            background: #f8fafc;
-            transform: translateY(-2px);
+        .choice-card p {
+            font-size: 0.8rem; color: #6b7280; line-height: 1.5; max-width: 220px;
         }
-        .footer {
-            margin-top: 2rem;
-            font-size: 0.75rem;
-            color: #64748b;
+
+        .choice-card .card-tag {
+            display: inline-flex; align-items: center; gap: 4px;
+            font-size: 0.75rem; font-weight: 600; padding: 0.4rem 1.2rem;
+            border-radius: 8px; margin-top: auto;
         }
+        .card-demo .card-tag { background: #6366f1; color: white; }
+        .card-own  .card-tag { background: white; color: #d97706; border: 1.5px solid #fcd34d; }
     </style>
 </head>
 <body>
-<div class="card">
-    <h1>🐾 Smart Pet Monitor</h1>
-    <p style="color:#4b5563; margin-bottom: 1rem;">Choose an option to continue</p>
-    <div class="btn-group">
-        <a href="/dashboard" class="btn btn-primary">📊 View Demo (Simulated Pets)</a>
-        <a href="/create-pet" class="btn btn-secondary">➕ Create My Own Pet</a>
+
+<div class="container">
+    <div class="logo">🐾</div>
+    <h1>Smart Pet Monitor</h1>
+
+    <div class="choice-row">
+        <a href="/dashboard" class="choice-card card-demo">
+            <div class="card-icon"><i class="fas fa-flask"></i></div>
+            <h2>Demo Mode</h2>
+            <p>Explore the dashboard with simulated pets and sample sensor data</p>
+            <span class="card-tag">View Demo <i class="fas fa-arrow-right"></i></span>
+        </a>
+
+        <a href="/create-pet" class="choice-card card-own">
+            <div class="card-icon"><i class="fas fa-microchip"></i></div>
+            <h2>Own Pet Mode</h2>
+            <p>Bind your hardware sensors and camera to monitor a real pet</p>
+            <span class="card-tag">Set Up <i class="fas fa-arrow-right"></i></span>
+        </a>
     </div>
 </div>
+
 </body>
 </html>

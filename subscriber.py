@@ -1,11 +1,12 @@
 import json
 import threading
 import paho.mqtt.client as mqtt
-from config import (MQTT_BROKER, MQTT_PORT,
+from config import (MQTT_BROKER, MQTT_PORT, ENCRYPTION_KEY,
                     TOPIC_FEEDER, TOPIC_AC,
                     TOPIC_FEEDER_STATUS, TOPIC_AC_STATUS)
 from database import init_db, save_sensor_data, save_alert, get_pet_type
 from utils.rule_engine import evaluate
+from utils.crypto import decrypt
 from utils.feeder import feed
 from utils.ac import ac_on, ac_off
 
@@ -54,6 +55,11 @@ def on_message(client, userdata, msg):
 
     # 处理 Demo / Custom 宠物数据 (demo/... 或 custom/...)
     if topic.startswith("demo/") or topic.startswith("custom/"):
+        try:
+            payload_str = decrypt(payload_str, ENCRYPTION_KEY)
+        except Exception:
+            print(f"Decryption failed for {topic} — skipping")
+            return
         parts = topic.split('/')
         if len(parts) >= 4 and parts[2] == 'sensor':
             try:

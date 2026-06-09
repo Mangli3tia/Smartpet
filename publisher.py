@@ -3,12 +3,13 @@ import time
 import threading
 import json
 import paho.mqtt.client as mqtt
-from config import (MQTT_BROKER, MQTT_PORT,
+from config import (MQTT_BROKER, MQTT_PORT, ENCRYPTION_KEY,
                     TOPIC_TEMP_DEFAULT, TOPIC_HUMI_DEFAULT, TOPIC_CAMERA_DEFAULT,
                     TOPIC_TEMP_CUSTOM, TOPIC_HUMI_CUSTOM, TOPIC_CAMERA_CUSTOM,
                     TOPIC_CAMERA_REQUEST, TOPIC_SYSTEM_PET_CREATED)
 from utils.sensor_emulator import generate_sensor_data as sim_sensor
 from utils.camera_emulator import generate_random_image as sim_camera, create_alert_message as sim_alert
+from utils.crypto import encrypt
 from database import get_all_pets
 
 # 真实硬件模块是可选的，仅在树莓派等设备上可用
@@ -28,6 +29,10 @@ except ImportError:
 client = mqtt.Client()
 client.connect(MQTT_BROKER, MQTT_PORT, 60)
 client.loop_start()
+
+def pub(topic, payload, qos=0):
+    """Publish encrypted payload to MQTT topic."""
+    client.publish(topic, encrypt(payload, ENCRYPTION_KEY), qos)
 
 active_pet_threads = set()
 thread_lock = threading.Lock()
@@ -73,7 +78,7 @@ def on_message(client, userdata, msg):
                 return
             alert = real_alert("manual_snapshot", img)
             cam_topic = TOPIC_CAMERA_CUSTOM.format(pet_id=pet_id)
-        client.publish(cam_topic, json.dumps(alert), qos=1)
+        pub(cam_topic, json.dumps(alert), qos=1)
         print(f"Published manual snapshot for {pet_id}")
 
 client.on_connect = on_connect
@@ -86,15 +91,15 @@ def publish_for_pet(pet):
     if ptype == 'default':
         while True:
             t, h = sim_sensor()
-            client.publish(TOPIC_TEMP_DEFAULT.format(pet_id=pid), json.dumps({"value": t}))
-            client.publish(TOPIC_HUMI_DEFAULT.format(pet_id=pid), json.dumps({"value": h}))
+            pub(TOPIC_TEMP_DEFAULT.format(pet_id=pid), json.dumps({"value": t}))
+            pub(TOPIC_HUMI_DEFAULT.format(pet_id=pid), json.dumps({"value": h}))
             print(f"[Demo {pid}] Simulated {t}°C {h}%")
             now = time.time()
             if now - last_photo >= 10:
                 img = sim_camera("auto")
                 if img:
                     alert = sim_alert("auto_snapshot", img)
-                    client.publish(TOPIC_CAMERA_DEFAULT.format(pet_id=pid), json.dumps(alert), qos=1)
+                    pub(TOPIC_CAMERA_DEFAULT.format(pet_id=pid), json.dumps(alert), qos=1)
                     print(f"[Demo {pid}] Auto snapshot")
                 last_photo = now
             time.sleep(2)
@@ -109,8 +114,8 @@ def publish_for_pet(pet):
         while True:
             t, h = real_sensor(device_id=temp_id)
             if t is not None and h is not None:
-                client.publish(TOPIC_TEMP_CUSTOM.format(pet_id=pid), json.dumps({"value": t}))
-                client.publish(TOPIC_HUMI_CUSTOM.format(pet_id=pid), json.dumps({"value": h}))
+                pub(TOPIC_TEMP_CUSTOM.format(pet_id=pid), json.dumps({"value": t}))
+                pub(TOPIC_HUMI_CUSTOM.format(pet_id=pid), json.dumps({"value": h}))
                 print(f"[Own {pid}] Real data: {t}°C {h}%")
             else:
                 print(f"[Own {pid}] Sensor read failed")
@@ -119,7 +124,7 @@ def publish_for_pet(pet):
                 img = real_camera(device_id=cam_id)
                 if img:
                     alert = real_alert("auto_snapshot", img)
-                    client.publish(TOPIC_CAMERA_CUSTOM.format(pet_id=pid), json.dumps(alert), qos=1)
+                    pub(TOPIC_CAMERA_CUSTOM.format(pet_id=pid), json.dumps(alert), qos=1)
                     print(f"[Own {pid}] Auto snapshot")
                 last_photo = now
             time.sleep(2)

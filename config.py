@@ -24,6 +24,9 @@ TOPIC_CAMERA_REQUEST = "pet/{pet_id}/camera/request"
 
 TOPIC_SYSTEM_PET_CREATED = "system/pet/created"
 
+# MQTT 消息加密密钥（Fernet / AES-128-CBC + HMAC）
+ENCRYPTION_KEY = b"2OttnimI9aKUo7SzbHnyulIT8yYidV4rwmtKdidPwjQ="
+
 DEFAULT_TEMP_MAX = 30.0
 DEFAULT_HUMI_MIN = 40.0
 # 添加缺失的两个默认值

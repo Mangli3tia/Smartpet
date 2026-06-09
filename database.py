@@ -132,7 +132,8 @@ def update_pet_thresholds(pet_id, temp_max=None, humi_min=None, camera_alert_pro
     conn.commit()
     conn.close()
 
-def update_pet(pet_id, name=None, species=None, temp_max=None, humi_min=None):
+def update_pet(pet_id, name=None, species=None, temp_max=None, humi_min=None,
+               temp_sensor_id=None, camera_id=None):
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
     if name is not None:
@@ -143,6 +144,10 @@ def update_pet(pet_id, name=None, species=None, temp_max=None, humi_min=None):
         c.execute("UPDATE pets SET temp_max = ? WHERE id = ?", (temp_max, pet_id))
     if humi_min is not None:
         c.execute("UPDATE pets SET humi_min = ? WHERE id = ?", (humi_min, pet_id))
+    if temp_sensor_id is not None:
+        c.execute("UPDATE pets SET temp_sensor_id = ? WHERE id = ?", (temp_sensor_id, pet_id))
+    if camera_id is not None:
+        c.execute("UPDATE pets SET camera_id = ? WHERE id = ?", (camera_id, pet_id))
     conn.commit()
     conn.close()
 
